@@ -69,6 +69,21 @@ this.numero.game = function (retValue) {
         right: 0;
         pointer-events: none;
       }
+      #game {
+        width: 100%;
+        max-width: var(--game-max-width);
+        margin: 0 auto;
+        height: calc(100% - var(--header-height));
+        display: flex;
+        flex-direction: column;
+      }
+      #board-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+        overflow: hidden;
+      }
       game-keyboard {
   			width: 100%;
   			max-width: var(--game-max-width);
@@ -89,8 +104,12 @@ this.numero.game = function (retValue) {
         ⚙️
       </div>
     </header>
-    <div id="game"></div>
-    <game-keyboard></game-keyboard>
+    <div id="game">
+      <div id="board-container">        
+      </div>
+      <game-keyboard></game-keyboard>
+    </div>
+
   `;
 
   var numeroRoot = function (htmlElement) {
