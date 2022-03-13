@@ -4,6 +4,45 @@ this.numero.game = function (retValue) {
 
   console.log("hello from numero");
 
+  // Keyboard tag
+
+  var digitsKeyboard = [
+    ["7", "8", "9"],
+    ["4", "5", "6"],
+    ["1", "2", "3"],
+    ["0", "Enter"],
+  ];
+
+  var keyboardHTMLElement = document.createElement("template");
+
+  keyboardHTMLElement.innerHTML = `
+    <h1>Keyboard</h1>
+  `;
+
+  var keyboard = function(htmlElement) {
+
+    setPrototype(returnFunction, htmlElement);
+    var element = constructElement(returnFunction);
+
+    function returnFunction() {
+      var e;
+      isInstanceOf(this, returnFunction);
+      (e = element.call(this)).attachShadow({ mode: "open" });
+      return e;
+    }
+
+    addKeyFunction(returnFunction , [{
+      key: "connectedCallback",
+      value: function () {
+        this.shadowRoot.appendChild(keyboardHTMLElement.content.cloneNode(!0));
+      }
+    }]);
+
+    return returnFunction;
+  }(SomethingElement(HTMLElement));
+  customElements.define("game-keyboard", keyboard);
+
+
   // Numero Root
 
   var numeroRootElement = document.createElement("template");
@@ -16,7 +55,7 @@ this.numero.game = function (retValue) {
         justify-content: space-between;
         flex-wrap: nowrap;
         padding: 0 16px;
-        height: 50px;
+        height: var(--header-height);
 
         border-bottom: 1px solid grey;
       }
@@ -30,6 +69,16 @@ this.numero.game = function (retValue) {
         right: 0;
         pointer-events: none;
       }
+      game-keyboard {
+  			width: 100%;
+  			max-width: var(--game-max-width);
+  			margin: 0 auto;
+  			height: var(--keyboard-height);
+  			display: flex;
+  			flex-direction: column;
+
+        border: 1px solid gray;
+  		}
     </style>
     <header>
       <div class="menu-left">
@@ -41,7 +90,7 @@ this.numero.game = function (retValue) {
       </div>
     </header>
     <div id="game"></div>
-    <div id="keyboard"></div>
+    <game-keyboard></game-keyboard>
   `;
 
   var numeroRoot = function (htmlElement) {
