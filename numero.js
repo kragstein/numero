@@ -16,6 +16,7 @@ this.numero.game = function (retValue) {
     ["1", "2", "3"],
     ["0", "Enter"],
   ];
+  var digits = [].concat.apply([], digitsKeyboard);
 
   var keyboardHTMLElement = document.createElement("template");
 
@@ -82,6 +83,35 @@ this.numero.game = function (retValue) {
           });
           lThis.$keyboard.appendChild(row);
         });
+
+        this.$keyboard.addEventListener("click", function(a) {
+          var target = a.target.closest("button");
+          if (target) {
+            if (lThis.$keyboard.contains(target)) {
+              lThis.dispatchKeyPressEvent(target.dataset.key);
+            }
+          }
+        });
+        window.addEventListener("keydown", (function(a) {
+           if (!0 !== a.repeat) {
+             var s = a.key;
+             if (digits.includes(s) || "Backspace" === s || "Enter" === s) {
+               lThis.dispatchKeyPressEvent(s);
+             }
+           }
+         }));
+      }
+    }, {
+      key: "dispatchKeyPressEvent",
+      value: function(e) {
+        console.log(e);
+        // this.dispatchEvent(new CustomEvent("game-key-press", {
+        //   bubbles: !0,
+        //   composed: !0,
+        //   detail: {
+        //     key: e
+        //   }
+        // }));
       }
     }]);
 
