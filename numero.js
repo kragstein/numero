@@ -6,6 +6,10 @@ this.numero.game = function (retValue) {
 
   // Keyboard tag
 
+  // Buttons
+  var button = document.createElement("template");
+  button.innerHTML = "<button>key</button>";
+
   var digitsKeyboard = [
     ["7", "8", "9"],
     ["4", "5", "6"],
@@ -16,7 +20,34 @@ this.numero.game = function (retValue) {
   var keyboardHTMLElement = document.createElement("template");
 
   keyboardHTMLElement.innerHTML = `
-    <h1>Keyboard</h1>
+    <style>
+      .row {
+  			display: flex;
+  			width: 100%;
+  			margin: 0 auto 8px;
+  			touch-action: manipulation;
+  		}
+      button {
+          font-family: inherit;
+  			  font-weight: bold;
+    			border: 0;
+    			padding: 0;
+    			margin: 0 6px 0 0;
+    			height: 58px;
+    			border-radius: 4px;
+    			cursor: pointer;
+    			user-select: none;
+    			background-color: #d4d7db;
+    			color: black;
+    			flex: 1;
+    			display: flex;
+    			justify-content: center;
+    			align-items: center;
+    			text-transform: uppercase;
+    			-webkit-tap-highlight-color: rgba(0,0,0,0.3);
+        }
+    </style>
+    <div id="keyboard"></div>
   `;
 
   var keyboard = function(htmlElement) {
@@ -34,7 +65,23 @@ this.numero.game = function (retValue) {
     addKeyFunction(returnFunction , [{
       key: "connectedCallback",
       value: function () {
+        var lThis = this;
+
         this.shadowRoot.appendChild(keyboardHTMLElement.content.cloneNode(!0));
+        this.$keyboard = this.shadowRoot.getElementById("keyboard");
+
+        digitsKeyboard.forEach(function (line) {
+
+          var row = document.createElement("div");
+          row.classList.add("row");
+          line.forEach(function (digit) {
+            var digitButton = button.content.cloneNode(!0);
+            digitButton.firstElementChild.textContent = digit;
+            digitButton.firstElementChild.dataset.key = digit;
+            row.appendChild(digitButton);
+          });
+          lThis.$keyboard.appendChild(row);
+        });
       }
     }]);
 
@@ -91,8 +138,6 @@ this.numero.game = function (retValue) {
   			height: var(--keyboard-height);
   			display: flex;
   			flex-direction: column;
-
-        border: 1px solid gray;
   		}
     </style>
     <header>
@@ -105,7 +150,7 @@ this.numero.game = function (retValue) {
       </div>
     </header>
     <div id="game">
-      <div id="board-container">        
+      <div id="board-container">
       </div>
       <game-keyboard></game-keyboard>
     </div>
