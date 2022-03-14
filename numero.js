@@ -14,7 +14,7 @@ this.numero.game = function (retValue) {
     ["7", "8", "9"],
     ["4", "5", "6"],
     ["1", "2", "3"],
-    ["0", "Enter"],
+    ["0", "↩", "⌫"],
   ];
   var digits = [].concat.apply([], digitsKeyboard);
 
@@ -30,6 +30,7 @@ this.numero.game = function (retValue) {
   		}
       button {
           font-family: inherit;
+          font-size: inherit;
   			  font-weight: bold;
     			border: 0;
     			padding: 0;
@@ -168,7 +169,20 @@ this.numero.game = function (retValue) {
   			height: var(--keyboard-height);
   			display: flex;
   			flex-direction: column;
+        font-size: large;
   		}
+      #board {
+        width: 4ch; /* to change with the size of the problem */
+        font-size: xxx-large;
+
+        display: grid;
+        justify-items: right;
+      }
+
+      .line {
+        border-bottom: 3px solid grey;
+        width: inherit;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -181,6 +195,12 @@ this.numero.game = function (retValue) {
     </header>
     <div id="game">
       <div id="board-container">
+        <div id="board">
+          <div id="valTop">1000</div>
+          <div id="valBot">-323</div>
+          <div class="line"></div>
+          <div id="valRes">?</div>
+        </div>
       </div>
       <game-keyboard></game-keyboard>
     </div>
@@ -204,6 +224,12 @@ this.numero.game = function (retValue) {
         value: function () {
           console.log("Connected numeroRoot");
           this.shadowRoot.appendChild(numeroRootElement.content.cloneNode(!0));
+
+          this.valtop = this.shadowRoot.querySelector("#valTop");
+          this.valtop.innerHTML = 1000;
+
+          this.valBot = this.shadowRoot.querySelector("#valBot");
+          this.valBot.innerHTML = "-" + Math.floor(Math.random() * 1000);
         }
       }
     ]);
