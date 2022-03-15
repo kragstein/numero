@@ -35,7 +35,7 @@ this.numero.game = function (retValue) {
     			border: 0;
     			padding: 0;
     			margin: 0 6px 0 0;
-    			height: 58px;
+    			height: 35px;
     			border-radius: 4px;
     			cursor: pointer;
     			user-select: none;
@@ -106,13 +106,13 @@ this.numero.game = function (retValue) {
       key: "dispatchKeyPressEvent",
       value: function(e) {
         console.log(e);
-        // this.dispatchEvent(new CustomEvent("game-key-press", {
-        //   bubbles: !0,
-        //   composed: !0,
-        //   detail: {
-        //     key: e
-        //   }
-        // }));
+        this.dispatchEvent(new CustomEvent("game-key-press", {
+          bubbles: !0, // bubbles up the DOM tree, to be catched
+          composed: !0, // propagates across the shadow DOM to regular DOM
+          detail: {
+            key: e // value associated with the event
+          }
+        }));
       }
     }]);
 
@@ -169,11 +169,11 @@ this.numero.game = function (retValue) {
   			height: var(--keyboard-height);
   			display: flex;
   			flex-direction: column;
-        font-size: large;
+        font-size: 1.2em;
   		}
       #board {
         width: 4ch; /* to change with the size of the problem */
-        font-size: xxx-large;
+        font-size: 3em;
 
         display: grid;
         justify-items: right;
@@ -215,6 +215,11 @@ this.numero.game = function (retValue) {
       var e;
       isInstanceOf(this, returnFunction);
       (e = element.call(this)).attachShadow({ mode: "open" });
+
+      addKeyValueToDict(NotInitializedError(e), "valResDiv", void 0);
+      addKeyValueToDict(NotInitializedError(e), "guess", 0);
+      // 1 if multiply mode
+
       return e;
     }
 
@@ -230,6 +235,49 @@ this.numero.game = function (retValue) {
 
           this.valBot = this.shadowRoot.querySelector("#valBot");
           this.valBot.innerHTML = "-" + Math.floor(Math.random() * 1000);
+
+          this.valResDiv = this.shadowRoot.getElementById("valRes");
+
+          this.addEventListener("game-key-press", (function(e) {
+            var numberStr = e.detail.key;
+            if (numberStr === "⌫" || numberStr === "Backspace") {
+              this.removeNumber();
+            } else if (numberStr === "↩" || numberStr === "Enter") {
+              this.submitGuess();
+            } else if (digits.includes(numberStr)) {
+              this.addNumber(parseInt(numberStr, 10));
+            }
+          }));
+        }
+      }, {
+        key: "removeNumber",
+        value: function (n) {
+          console.log("Removing number");
+          var innerHTML = this.valResDiv.innerHTML;
+
+          if (innerHTML.length === 1) {
+              this.valResDiv.innerHTML = "?";
+              return;
+          }
+          innerHTML = innerHTML.slice(0, innerHTML.length -1);
+          this.valResDiv.innerHTML = innerHTML;
+          // .slice(0, this.boardState[this.rowIndex].length - 1);
+        }
+      }, {
+        key: "addNumber",
+        value: function (n) {
+          console.log("Adding number: " + n);
+          var innerHTML = this.valResDiv.innerHTML;
+          if (innerHTML === "?") {
+              this.valResDiv.innerHTML = n;
+          } else {
+            this.valResDiv.innerHTML += n;
+          }
+        }
+      }, {
+        key: "submitGuess",
+        value: function() {
+          console.log("Submitting guess");
         }
       }
     ]);
