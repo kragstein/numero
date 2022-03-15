@@ -183,6 +183,9 @@ this.numero.game = function (retValue) {
         border-bottom: 3px solid grey;
         width: inherit;
       }
+      #game-status {
+        padding: 0 1em 0;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -196,11 +199,14 @@ this.numero.game = function (retValue) {
     <div id="game">
       <div id="board-container">
         <div id="board">
-          <div id="valTop">1000</div>
-          <div id="valBot">-323</div>
+          <div id="valTop"></div>
+          <div id="valBot"></div>
           <div class="line"></div>
           <div id="valRes">?</div>
         </div>
+      </div>
+      <div>
+        <p id="game-status"> Status > </p>
       </div>
       <game-keyboard></game-keyboard>
     </div>
@@ -216,8 +222,18 @@ this.numero.game = function (retValue) {
       isInstanceOf(this, returnFunction);
       (e = element.call(this)).attachShadow({ mode: "open" });
 
+      addKeyValueToDict(NotInitializedError(e), "valTop", void 0);
+      addKeyValueToDict(NotInitializedError(e), "valBot", void 0);
+      addKeyValueToDict(NotInitializedError(e), "valSol", void 0);
+
+      addKeyValueToDict(NotInitializedError(e), "valGuess", 0);
+
+      addKeyValueToDict(NotInitializedError(e), "valTopDiv", void 0);
+      addKeyValueToDict(NotInitializedError(e), "valBotDiv", void 0);
       addKeyValueToDict(NotInitializedError(e), "valResDiv", void 0);
-      addKeyValueToDict(NotInitializedError(e), "guess", 0);
+
+      addKeyValueToDict(NotInitializedError(e), "gameStatus", void 0);
+      addKeyValueToDict(NotInitializedError(e), "gameStatusDiv", void 0);
       // 1 if multiply mode
 
       return e;
@@ -230,36 +246,37 @@ this.numero.game = function (retValue) {
           console.log("Connected numeroRoot");
           this.shadowRoot.appendChild(numeroRootElement.content.cloneNode(!0));
 
-          this.valtop = this.shadowRoot.querySelector("#valTop");
-          this.valtop.innerHTML = 1000;
-
-          this.valBot = this.shadowRoot.querySelector("#valBot");
-          this.valBot.innerHTML = "-" + Math.floor(Math.random() * 1000);
-
+          this.valTopDiv = this.shadowRoot.getElementById("valTop");
+          this.valBotDiv = this.shadowRoot.getElementById("valBot");
           this.valResDiv = this.shadowRoot.getElementById("valRes");
+          this.gameStatusDiv = this.shadowRoot.getElementById("game-status");
 
           this.addEventListener("game-key-press", (function(e) {
-            var numberStr = e.detail.key;
-            if (numberStr === "⌫" || numberStr === "Backspace") {
-              this.removeNumber();
-            } else if (numberStr === "↩" || numberStr === "Enter") {
-              this.submitGuess();
-            } else if (digits.includes(numberStr)) {
-              this.addNumber(parseInt(numberStr, 10));
+            if (this.gameStatus === "Status > Playing...") {
+              var numberStr = e.detail.key;
+              if (numberStr === "⌫" || numberStr === "Backspace") {
+                this.removeNumber();
+              } else if (numberStr === "↩" || numberStr === "Enter") {
+                this.submitGuess();
+              } else if (digits.includes(numberStr)) {
+                this.addNumber(parseInt(numberStr, 10));
+              }
             }
           }));
+
+          this.newGame();
         }
       }, {
         key: "removeNumber",
         value: function (n) {
           console.log("Removing number");
-          var innerHTML = this.valResDiv.innerHTML;
 
-          if (innerHTML.length === 1) {
+          if (this.valResDiv.innerHTML.length === 1) {
               this.valResDiv.innerHTML = "?";
               return;
           }
-          innerHTML = innerHTML.slice(0, innerHTML.length -1);
+          var innerHTML = this.valResDiv.innerHTML.slice(0,
+            this.valResDiv.innerHTML.length -1);
           this.valResDiv.innerHTML = innerHTML;
           // .slice(0, this.boardState[this.rowIndex].length - 1);
         }
@@ -267,8 +284,8 @@ this.numero.game = function (retValue) {
         key: "addNumber",
         value: function (n) {
           console.log("Adding number: " + n);
-          var innerHTML = this.valResDiv.innerHTML;
-          if (innerHTML === "?") {
+
+          if (this.valResDiv.innerHTML === "?") {
               this.valResDiv.innerHTML = n;
           } else {
             this.valResDiv.innerHTML += n;
@@ -278,6 +295,29 @@ this.numero.game = function (retValue) {
         key: "submitGuess",
         value: function() {
           console.log("Submitting guess");
+          if (parseInt(this.valResDiv.innerHTML, 10) === this.valRes) {
+            console.log("RIGHT");
+            this.gameStatus = "ENDEDRIGHT";
+            this.gameStatusDiv.innerHTML = "WIN !";
+          } else {
+            console.log("WRONG");
+          }
+        }
+      }, {
+        key: "newGame",
+        value: function () {
+
+          this.gameStatus = "RUNNING";
+          this.gameStatus = "Status > Playing...";
+
+          this.valTop = 1000;
+          this.valBot = Math.floor(Math.random() * (-1000));
+          this.valRes = this.valTop + this.valBot;
+
+          this.valTopDiv.innerHTML = this.valTop.toString();
+          this.valBotDiv.innerHTML = this.valBot.toString();
+
+          console.log("New game: ", this.valTop, this.valBot, this.valRes);
         }
       }
     ]);
