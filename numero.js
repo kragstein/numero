@@ -35,7 +35,7 @@ this.numero.game = function (retValue) {
     			border: 0;
     			padding: 0;
     			margin: 0 6px 0 0;
-    			height: 35px;
+    			height: 55px;
     			border-radius: 4px;
     			cursor: pointer;
     			user-select: none;
@@ -97,6 +97,8 @@ this.numero.game = function (retValue) {
            if (!0 !== a.repeat) {
              var s = a.key;
              if (digits.includes(s) || "Backspace" === s || "Enter" === s) {
+               lThis.dispatchKeyPressEvent(s);
+             } else if (s.toLowerCase() === "r") {
                lThis.dispatchKeyPressEvent(s);
              }
            }
@@ -194,6 +196,14 @@ this.numero.game = function (retValue) {
         cursor: pointer;
         padding: 0 4px;
       }
+      .toaster {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        transform: translate(-50%, 0);
+        pointer-events: none;
+        width: fit-content;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -219,10 +229,11 @@ this.numero.game = function (retValue) {
         </div>
       </div>
       <div>
-        <p id="game-status"> Status > </p>
+        <p id="game-status"> Warm Up! </p>
       </div>
       <game-keyboard></game-keyboard>
     </div>
+    <div class="toaster" id="game-toaster"></div>
 
   `;
 
@@ -265,14 +276,18 @@ this.numero.game = function (retValue) {
           this.gameStatusDiv = this.shadowRoot.getElementById("game-status");
 
           this.addEventListener("game-key-press", (function(e) {
-            if (this.gameStatus === "Status > Playing...") {
-              var numberStr = e.detail.key;
+            var numberStr = e.detail.key;
+            if (this.gameStatus === "RUNNING") {
               if (numberStr === "⌫" || numberStr === "Backspace") {
                 this.removeNumber();
               } else if (numberStr === "↩" || numberStr === "Enter") {
                 this.submitGuess();
               } else if (digits.includes(numberStr)) {
                 this.addNumber(parseInt(numberStr, 10));
+              }
+            } else {
+              if (numberStr.toLowerCase() === "r") {
+                this.newGame();
               }
             }
           }));
@@ -311,9 +326,11 @@ this.numero.game = function (retValue) {
           if (parseInt(this.valResDiv.innerHTML, 10) === this.valRes) {
             console.log("RIGHT");
             this.gameStatus = "ENDEDRIGHT";
-            this.gameStatusDiv.innerHTML = "WIN !" ;
+            // this.gameStatusDiv.innerHTML = "WIN !" ;
+            this.addToast("WIN");
           } else {
             console.log("WRONG");
+            this.addToast("WRONG");
           }
         }
       }, {
@@ -321,16 +338,29 @@ this.numero.game = function (retValue) {
         value: function () {
 
           this.gameStatus = "RUNNING";
-          this.gameStatus = "Status > Playing...";
 
-          this.valTop = 1000;
-          this.valBot = Math.floor(Math.random() * (-1000));
+          this.valTop = Math.floor(100 + Math.random() * (900))
+          this.valBot = Math.floor(Math.random() * (1 - this.valTop));
           this.valRes = this.valTop + this.valBot;
 
           this.valTopDiv.innerHTML = this.valTop.toString();
           this.valBotDiv.innerHTML = this.valBot.toString();
+          this.valResDiv.innerHTML = "?";
 
           console.log("New game: ", this.valTop, this.valBot, this.valRes);
+        }
+      }, {
+        key: "addToast",
+        value: function(e, a) {
+          var s = arguments.length > 2 && void 0 !== arguments[2] && arguments[2];
+          var t = document.createElement("game-toast");
+          t.setAttribute("text", e);
+          // a && t.setAttribute("duration", a);
+          if (s) {
+            this.shadowRoot.querySelector("#system-toaster").prepend(t);
+          } else {
+            this.shadowRoot.querySelector("#game-toaster").prepend(t);
+          }
         }
       }
     ]);
@@ -338,6 +368,64 @@ this.numero.game = function (retValue) {
     return returnFunction;
   }(SomethingElement(HTMLElement));
   customElements.define("numero-root", numeroRoot);
+
+  // Toast
+
+  var toastElement = document.createElement("template");
+  toastElement.innerHTML = `
+  <style>
+    .toast {
+      position: relative;
+      margin: 16px;
+      background-color: black;
+      color: white;
+      padding: 16px;
+      border: none;
+      border-radius: 4px;
+      opacity: 1;
+      transition: opacity 300ms cubic-bezier(0.645, 0.045, 0.355, 1);
+      font-weight: 700;
+    }
+    .win {
+      background-color: var(--color-correct);
+      color: var(--tile-text-color);
+    }
+    .fade {
+      opacity: 0;
+    }
+  </style>
+  <div class="toast"></div>
+  `;
+  var gameToast = function(htmlElement) {
+    setPrototype(returnFunction, htmlElement);
+    var element = constructElement(returnFunction);
+
+    function returnFunction() {
+      var e;
+      isInstanceOf(this, returnFunction);
+      (e = element.call(this)).attachShadow({ mode: "open" });
+      return e;
+    }
+
+    addKeyFunction(returnFunction , [{
+      key: "connectedCallback",
+      value: function() {
+        var e = this;
+        this.shadowRoot.appendChild(toastElement.content.cloneNode(!0));
+        var toastDiv = this.shadowRoot.querySelector(".toast");
+        toastDiv.textContent = this.getAttribute("text");
+        setTimeout((function () {
+          toastDiv.classList.add("fade");
+        }), 1e3);
+        toastDiv.addEventListener("transitionend", (function (a) {
+          e.parentNode.removeChild(e);
+        }));
+      }
+    }]);
+
+    return returnFunction;
+  }(SomethingElement(HTMLElement));
+  customElements.define("game-toast", gameToast);
 
   // icons
 
@@ -422,6 +510,13 @@ this.numero.game = function (retValue) {
         if (e === "reload") {
           this.addEventListener("click", function(a) {
             console.log("reload");
+            this.dispatchEvent(new CustomEvent("game-key-press", {
+              bubbles: !0, // bubbles up the DOM tree, to be catched
+              composed: !0, // propagates across the shadow DOM to regular DOM
+              detail: {
+                key: "r" // value associated with the event
+              }
+            }));
           });
         }
       }
