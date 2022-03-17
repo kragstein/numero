@@ -232,6 +232,7 @@ this.numero.game = function (retValue) {
         <p id="game-status"> Warm Up! </p>
       </div>
       <game-keyboard></game-keyboard>
+      <full-page></full-page>
     </div>
     <div class="toaster" id="game-toaster"></div>
 
@@ -268,7 +269,15 @@ this.numero.game = function (retValue) {
         key: "connectedCallback",
         value: function () {
           console.log("Connected numeroRoot");
+          var rootThis = this;
+
           this.shadowRoot.appendChild(numeroRootElement.content.cloneNode(!0));
+
+          this.shadowRoot.getElementById("settings-button").
+             addEventListener("click", (function(e) {
+               // this will be the settings button here
+               rootThis.showSettingsFullPage();
+             }));
 
           this.valTopDiv = this.shadowRoot.getElementById("valTop");
           this.valBotDiv = this.shadowRoot.getElementById("valBot");
@@ -295,6 +304,18 @@ this.numero.game = function (retValue) {
           this.newGame();
         }
       }, {
+        key: "showSettingsFullPage",
+        value: function () {
+          var modalDiv = this.shadowRoot.querySelector("full-page");
+          var s = document.createTextNode("Settings");
+          modalDiv.appendChild(s);
+          var settings = document.createElement("game-settings");
+          settings.setAttribute("page", "");
+          settings.setAttribute("slot", "content");
+          modalDiv.appendChild(settings);
+          modalDiv.setAttribute("open", "");
+        }
+      },{
         key: "removeNumber",
         value: function (n) {
           console.log("Removing number");
@@ -369,6 +390,251 @@ this.numero.game = function (retValue) {
   }(SomethingElement(HTMLElement));
   customElements.define("numero-root", numeroRoot);
 
+  // Full page menu
+
+  var fullPageElement = document.createElement("template");
+    fullPageElement.innerHTML = `
+	<style>
+		.overlay {
+			display: none;
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			justify-content: center;
+			background-color: white;
+			animation: SlideIn 100ms linear;
+			z-index: `.concat(2e3, `;
+		}
+		:host([open]) .overlay {
+			display: flex;
+		}
+		.content {
+			position: relative;
+			color: black;
+			padding: 0 32px;
+			max-width: var(--game-max-width);
+			width: 100%;
+			overflow-y: auto;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+		}
+		.content-container {
+			height: 100%;
+		}
+		.overlay.closing {
+			animation: SlideOut 150ms linear;
+		}
+		header {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			position: relative;
+		}
+		h1 {
+			font-weight: 700;
+			font-size: 16px;
+			letter-spacing: 0.5px;
+			text-transform: uppercase;
+			text-align: center;
+			margin-bottom: 10px;
+		}
+		game-icon {
+			position: absolute;
+			right: 0;
+      top: 10px;
+			user-select: none;
+			cursor: pointer;
+		}
+		@media only screen and (min-device-width : 320px)
+                       and (max-device-width : 480px) {
+			.content {
+				max-width: 100%;
+				padding: 0;
+			}
+			game-icon {
+				padding: 0 16px;
+			}
+		}
+		@keyframes SlideIn {
+			0% {
+				transform: translateY(30px);
+				opacity: 0;
+			}
+			100% {
+				transform: translateY(0px);
+				opacity: 1;
+			}
+		}
+		@keyframes SlideOut {
+			0% {
+				transform: translateY(0px);
+				opacity: 1;
+			}
+			90% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 0;
+				transform: translateY(60px);
+			}
+		}
+	</style>
+	<div class="overlay">
+		<div class="content">
+			<header>
+				<h1><slot></slot></h1>
+				<game-icon icon="close"></game-icon>
+			</header>
+			<div class="content-container">
+				<slot name="content"></slot>
+			</div>
+		</div>
+	</div>`);
+
+  var fullPage = function(htmlElement) {
+
+    setPrototype(returnFunction, htmlElement);
+    var element = constructElement(returnFunction);
+
+    function returnFunction() {
+      var e;
+      isInstanceOf(this, returnFunction);
+      (e = element.call(this)).attachShadow({ mode: "open" });
+      return e;
+    }
+
+    addKeyFunction(returnFunction, [{
+      key: "connectedCallback",
+      value: function() {
+        var e = this;
+        this.shadowRoot.appendChild(fullPageElement.content.cloneNode(!0));
+				this.shadowRoot.querySelector("game-icon").addEventListener("click",
+          function(a) {
+            e.shadowRoot.querySelector(".overlay").classList.add("closing");
+          });
+        this.shadowRoot.addEventListener("animationend", (function(a) {
+          "SlideOut" === a.animationName &&
+          (e.shadowRoot.querySelector(".overlay").classList.remove("closing"),
+          Array.from(e.childNodes).forEach((function(a) {
+            e.removeChild(a)
+          })), e.removeAttribute("open"))
+        }))
+      }
+    }]);
+    return returnFunction;
+  }(SomethingElement(HTMLElement));
+  customElements.define("full-page", fullPage);
+
+  // Settings Menu
+
+  var settingsElement = document.createElement("template");
+  settingsElement.innerHTML = `
+    <style>
+      .setting {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #d4d5d9;
+        padding: 16px 0;
+      }
+      .text {
+        padding-right: 8px;
+      }
+      .content {
+        position: relative;
+        color: black;
+        padding: 0 32px;
+        max-width: var(--game-max-width);
+        width: 100%;
+        overflow-y: auto;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .title {
+        font-size: 18px;
+      }
+      .description {
+        font-size: 12px;
+        color: #777b7d;
+      }
+      a, a:visited {
+        color: #787c7e;
+      }
+
+      #footnote {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 16px;
+        color: #787c7e;
+        font-size: 12px;
+        text-align: right;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+
+    </style>
+    <section>
+      <div class="setting">
+        <div class="text">
+          <div class="title">Hard Mode</div>
+          <div class="description">Description</div>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="text">
+          <div class="title">Dark Theme</div>
+        </div>
+      </div>
+    </section>
+    <section>
+      <div class="setting">
+        <div class="text">
+          <div class="title">More ?</div>
+        </div>
+        <div class="control"><a href="./">Link</a></div>
+      </div>
+    </section>
+
+    <div id="footnote">
+      <div>© Numero 2022</div>
+      <div id="puzzle-number">#123</div>
+    </div>
+
+
+  `;
+
+  var settings = function(htmlElement) {
+    setPrototype(returnFunction, htmlElement);
+    var element = constructElement(returnFunction);
+
+    function returnFunction() {
+      var e;
+      isInstanceOf(this, returnFunction);
+      (e = element.call(this)).attachShadow({ mode: "open" });
+      return e;
+    }
+
+    addKeyFunction(returnFunction , [{
+      key: "connectedCallback",
+      value: function() {
+        this.shadowRoot.appendChild(settingsElement.content.cloneNode(!0));
+
+        // var pNum = this.shadowRoot.querySelector("#puzzle-number");
+        // pNum.innerHTML = "#" + solutionNum;
+      }
+    }]);
+
+    return returnFunction;
+  }(SomethingElement(HTMLElement));
+  customElements.define("game-settings", settings);
+
   // Toast
 
   var toastElement = document.createElement("template");
@@ -433,6 +699,7 @@ this.numero.game = function (retValue) {
     settings: "0 0 45 45",
     reload: "0 0 500 500",
     numero: "100 100 800 700",
+    close: "0 0 22 22",
   };
 
   var iconPaths = {
@@ -478,13 +745,18 @@ this.numero.game = function (retValue) {
     -30.9 71.4-30.9 31.5 0 54.8 9.6 71 29.1 16.4 20.3 24.9 48.6 24.9 84.9 0
     36.3-8.4 64.1-24.8 83.9-16.5 19.4-40 29.2-71.1 29.2-31.2 0-55-10.3-71.4
     -30.4-16.3-20.1-24.5-47.3-24.5-82.6 0.1-35.8 8.2-63 24.5-83.2z`,
+    close: `
+    M13.41 12l4.3-4.29a1 1 0 1 0-1.42-1.42L12 10.59l-4.29-4.3a1 1 0 0 0-1.42
+    1.42l4.3 4.29-4.3 4.29a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l4.29-4.3 4.29 4.3
+    a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42z
+    `
   };
 
   var iconElement = document.createElement("template");
   iconElement.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" height="24"
          viewBox="0 0 50 50" width="24">
-      <path fill=var(--color-tone-1) />
+      <path fill=black />
     </svg>
   `;
 
