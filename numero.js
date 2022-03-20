@@ -542,6 +542,7 @@ this.numero.game = function (retValue) {
       }
       .text {
         padding-right: 8px;
+        flex-grow: 1;
       }
       .content {
         position: relative;
@@ -553,6 +554,9 @@ this.numero.game = function (retValue) {
         height: 100%;
         display: flex;
         flex-direction: column;
+      }
+      section {
+        padding: 0 1em 0;
       }
       .title {
         font-size: 18px;
@@ -578,18 +582,41 @@ this.numero.game = function (retValue) {
         justify-content: space-between;
         align-items: flex-end;
       }
+      .operations {
+        display: flex;
+        margin-top: 1em;
+      }
+      .operation {
+        flex-grow: 1;
+        padding: 1em 0 1em;
+        margin: 0 1em 0;
+      }
+
 
     </style>
     <section>
       <div class="setting">
         <div class="text">
-          <div class="title">Hard Mode</div>
-          <div class="description">Description</div>
+          <div class="title">Operation</div>
+          <div class="description">Which operation do you want to play?</div>
+          <div class="operations">
+            <button class="operation">+</button>
+            <button class="operation">-</button>
+            <button class="operation">×</button>
+            <button class="operation">÷</button>
+          </div>
         </div>
       </div>
       <div class="setting">
         <div class="text">
-          <div class="title">Dark Theme</div>
+          <div class="title">Size</div>
+          <div class="description">How many digits in your operands?</div>
+          <div class="operations">
+            <button class="operation">1</button>
+            <button class="operation">2</button>
+            <button class="operation">3</button>
+            <button class="operation">4</button>
+          </div>
         </div>
       </div>
     </section>
@@ -604,7 +631,7 @@ this.numero.game = function (retValue) {
 
     <div id="footnote">
       <div>© Numero 2022</div>
-      <div id="puzzle-number">#123</div>
+      <div id="puzzle-number">#1</div>
     </div>
 
 
