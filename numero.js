@@ -2,9 +2,17 @@ this.numero = this.numero || {};
 
 this.numero.game = function (retValue) {
 
-  console.log("hello from numero");
+  console.log("Welcome to numero");
 
-  // Keyboard tag
+  // Settings
+
+  var currentSettings = {
+    operator: "addition",
+    sizeOperand: "one",
+  };
+
+  var OPERATTIONS = ["addition", "substraction", "multiplication", "division"];
+  var SIZES = ["one", "two", "three", "four"];
 
   // Buttons
   var button = document.createElement("template");
@@ -18,6 +26,7 @@ this.numero.game = function (retValue) {
   ];
   var digits = [].concat.apply([], digitsKeyboard);
 
+  // Keyboard tag
   var keyboardHTMLElement = document.createElement("template");
 
   keyboardHTMLElement.innerHTML = `
@@ -107,7 +116,6 @@ this.numero.game = function (retValue) {
     }, {
       key: "dispatchKeyPressEvent",
       value: function(e) {
-        console.log(e);
         this.dispatchEvent(new CustomEvent("game-key-press", {
           bubbles: !0, // bubbles up the DOM tree, to be catched
           composed: !0, // propagates across the shadow DOM to regular DOM
@@ -268,7 +276,6 @@ this.numero.game = function (retValue) {
       {
         key: "connectedCallback",
         value: function () {
-          console.log("Connected numeroRoot");
           var rootThis = this;
 
           this.shadowRoot.appendChild(numeroRootElement.content.cloneNode(!0));
@@ -318,8 +325,6 @@ this.numero.game = function (retValue) {
       },{
         key: "removeNumber",
         value: function (n) {
-          console.log("Removing number");
-
           if (this.valResDiv.innerHTML.length === 1) {
               this.valResDiv.innerHTML = "?";
               return;
@@ -332,8 +337,6 @@ this.numero.game = function (retValue) {
       }, {
         key: "addNumber",
         value: function (n) {
-          console.log("Adding number: " + n);
-
           if (this.valResDiv.innerHTML === "?") {
               this.valResDiv.innerHTML = n;
           } else {
@@ -343,14 +346,11 @@ this.numero.game = function (retValue) {
       }, {
         key: "submitGuess",
         value: function() {
-          console.log("Submitting guess");
           if (parseInt(this.valResDiv.innerHTML, 10) === this.valRes) {
-            console.log("RIGHT");
             this.gameStatus = "ENDEDRIGHT";
             // this.gameStatusDiv.innerHTML = "WIN !" ;
             this.addToast("WIN");
           } else {
-            console.log("WRONG");
             this.addToast("WRONG");
           }
         }
@@ -368,7 +368,7 @@ this.numero.game = function (retValue) {
           this.valBotDiv.innerHTML = this.valBot.toString();
           this.valResDiv.innerHTML = "?";
 
-          console.log("New game: ", this.valTop, this.valBot, this.valRes);
+          console.log("New game: ", this.valTop, this.valBot, this.valRes+1);
         }
       }, {
         key: "addToast",
@@ -582,6 +582,10 @@ this.numero.game = function (retValue) {
         justify-content: space-between;
         align-items: flex-end;
       }
+      button {
+        border-radius: 10px;
+        border: 0;
+      }
       .operations {
         display: flex;
         margin-top: 1em;
@@ -590,6 +594,9 @@ this.numero.game = function (retValue) {
         flex-grow: 1;
         padding: 1em 0 1em;
         margin: 0 1em 0;
+      }
+      .selected {
+        background-color: LightSkyBlue;
       }
 
 
@@ -600,10 +607,10 @@ this.numero.game = function (retValue) {
           <div class="title">Operation</div>
           <div class="description">Which operation do you want to play?</div>
           <div class="operations">
-            <button class="operation">+</button>
-            <button class="operation">-</button>
-            <button class="operation">×</button>
-            <button class="operation">÷</button>
+            <button class="operation" id="addition">+</button>
+            <button class="operation" id="substraction">-</button>
+            <button class="operation" id="multiplication">×</button>
+            <button class="operation" id="division">÷</button>
           </div>
         </div>
       </div>
@@ -612,10 +619,10 @@ this.numero.game = function (retValue) {
           <div class="title">Size</div>
           <div class="description">How many digits in your operands?</div>
           <div class="operations">
-            <button class="operation">1</button>
-            <button class="operation">2</button>
-            <button class="operation">3</button>
-            <button class="operation">4</button>
+            <button class="operation" id="one">1</button>
+            <button class="operation" id="two">2</button>
+            <button class="operation" id="three">3</button>
+            <button class="operation" id="four">4</button>
           </div>
         </div>
       </div>
@@ -651,10 +658,45 @@ this.numero.game = function (retValue) {
     addKeyFunction(returnFunction , [{
       key: "connectedCallback",
       value: function() {
+        var lThis = this;
         this.shadowRoot.appendChild(settingsElement.content.cloneNode(!0));
 
+        var settingsButtons = this.shadowRoot.querySelectorAll("button");
+
+        settingsButtons.forEach(function(button, i) {
+          button.addEventListener("click", function () {
+            var b = this;
+            if (OPERATTIONS.includes(b.id)) {
+              currentSettings.operator = b.id;
+            } else if (SIZES.includes(b.id)) {
+              currentSettings.sizeOperand = b.id;
+            }
+            lThis.render();
+          });
+        });
         // var pNum = this.shadowRoot.querySelector("#puzzle-number");
         // pNum.innerHTML = "#" + solutionNum;
+        this.render();
+      }
+    }, {
+      key: "render",
+      value: function() {
+        console.log(`New settings: ${currentSettings.operator} ` +
+          `by ${currentSettings.sizeOperand}`);
+
+        var settingsButtons = this.shadowRoot.querySelectorAll("button");
+        settingsButtons.forEach((item, i) => {
+          item.classList.remove("selected");
+        });
+
+        var operatorDiv = this.shadowRoot.querySelector(
+          "#" + currentSettings.operator);
+        operatorDiv.classList.add("selected");
+
+        var operandDiv = this.shadowRoot.querySelector(
+          "#" + currentSettings.sizeOperand);
+        operandDiv.classList.add("selected");
+
       }
     }]);
 
