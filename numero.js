@@ -286,6 +286,10 @@ this.numero.game = function (retValue) {
                rootThis.showSettingsFullPage();
              }));
 
+          this.addEventListener("new-game", function() {
+            this.newGame();
+          });
+
           this.valTopDiv = this.shadowRoot.getElementById("valTop");
           this.valBotDiv = this.shadowRoot.getElementById("valBot");
           this.valResDiv = this.shadowRoot.getElementById("valRes");
@@ -360,15 +364,33 @@ this.numero.game = function (retValue) {
 
           this.gameStatus = "RUNNING";
 
-          this.valTop = Math.floor(100 + Math.random() * (900))
-          this.valBot = Math.floor(Math.random() * (1 - this.valTop));
-          this.valRes = this.valTop + this.valBot;
+          this.valTop = Math.floor(10 + Math.random() * (90))
+          this.valBot = Math.floor(Math.random() * this.valTop);
+
+          switch (currentSettings.operator) {
+            case "addition":
+              this.valRes = this.valTop + this.valBot;
+              this.valBotDiv.innerHTML = "+" + this.valBot.toString();
+              break;
+            case "substraction":
+              this.valRes = this.valTop - this.valBot;
+              this.valBotDiv.innerHTML = "-" + this.valBot.toString();
+              break;
+            case "multiplication":
+              this.valRes = this.valTop * this.valBot;
+              this.valBotDiv.innerHTML = "*" + this.valBot.toString();
+              break;
+            case "division":
+              this.valRes = this.valTop / this.valBot;
+              this.valBotDiv.innerHTML = "÷" + this.valBot.toString();
+              break;
+          }
 
           this.valTopDiv.innerHTML = this.valTop.toString();
-          this.valBotDiv.innerHTML = this.valBot.toString();
+
           this.valResDiv.innerHTML = "?";
 
-          console.log("New game: ", this.valTop, this.valBot, this.valRes+1);
+          console.log("New game: ", this.valTop, this.valBot, this.valRes);
         }
       }, {
         key: "addToast",
@@ -520,8 +542,13 @@ this.numero.game = function (retValue) {
           (e.shadowRoot.querySelector(".overlay").classList.remove("closing"),
           Array.from(e.childNodes).forEach((function(a) {
             e.removeChild(a)
-          })), e.removeAttribute("open"))
-        }))
+          })), e.removeAttribute("open"));
+          this.dispatchEvent(new CustomEvent("new-game", {
+            bubbles: !0, // bubbles up the DOM tree, to be catched
+            composed: !0, // propagates across the shadow DOM to regular DOM
+          }));
+        }));
+
       }
     }]);
     return returnFunction;
