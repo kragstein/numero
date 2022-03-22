@@ -13,6 +13,7 @@ this.numero.game = function (retValue) {
 
   var OPERATTIONS = ["addition", "substraction", "multiplication", "division"];
   var SIZES = ["one", "two", "three", "four"];
+  var sizeToInt = { one: 1, two: 2, three: 3, four: 4};
 
   // Buttons
   var button = document.createElement("template");
@@ -154,7 +155,6 @@ this.numero.game = function (retValue) {
         flex-wrap: nowrap;
         padding: 0 16px;
         height: var(--header-height);
-
         border-bottom: 1px solid grey;
       }
       header .title {
@@ -181,6 +181,7 @@ this.numero.game = function (retValue) {
         align-items: center;
         flex-grow: 1;
         overflow: hidden;
+        flex-direction: column;
       }
       game-keyboard {
   			width: 100%;
@@ -194,11 +195,15 @@ this.numero.game = function (retValue) {
       #board {
         width: 4ch; /* to change with the size of the problem */
         font-size: 3em;
-
+        margin-bottom: 1rem;
         display: grid;
         justify-items: right;
+        border: 1px solid grey;
       }
-
+      #gridboard {
+        font-size: 3rem;
+        border: 1px solid grey;
+      }
       .line {
         border-bottom: 3px solid grey;
         width: inherit;
@@ -245,6 +250,9 @@ this.numero.game = function (retValue) {
           <div class="line"></div>
           <div id="valRes">?</div>
         </div>
+        <!-- <div id="gridboard">
+        1
+        </div> -->
       </div>
       <div>
         <p id="game-status"> Warm Up! </p>
@@ -374,24 +382,40 @@ this.numero.game = function (retValue) {
 
           this.gameStatus = "RUNNING";
 
-          this.valTop = Math.floor(10 + Math.random() * (90))
-          this.valBot = Math.floor(Math.random() * this.valTop);
+          var numOf10 = sizeToInt[currentSettings.sizeOperand];
+
+          this.valTop = Math.floor(numOf10 + Math.random() * numOf10 * 9)
+          this.valBot = Math.floor(2 + Math.random() * (this.valTop - 2));
 
           switch (currentSettings.operator) {
             case "addition":
+              this.valTop = Math.ceil(Math.random() * Math.pow(10, numOf10));
+              this.valBot = Math.ceil(Math.random() * Math.pow(10, numOf10));
               this.valRes = this.valTop + this.valBot;
               this.valBotDiv.innerHTML = "+" + this.valBot.toString();
               break;
             case "substraction":
+              this.valTop = Math.ceil(Math.random() * Math.pow(10, numOf10));
+              this.valBot = Math.ceil(Math.random() * Math.pow(10, numOf10));
+              if (this.valTop < this.valBot) {
+                var v = this.valBot;
+                this.valBot = this.valTop;
+                this.valTop = v;
+              }
               this.valRes = this.valTop - this.valBot;
               this.valBotDiv.innerHTML = "-" + this.valBot.toString();
               break;
             case "multiplication":
+              this.valTop = Math.ceil(1 + Math.random() * (10 * numOf10 - 2));
+              this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 2));
               this.valRes = this.valTop * this.valBot;
               this.valBotDiv.innerHTML = "*" + this.valBot.toString();
               break;
             case "division":
-              this.valRes = this.valTop / this.valBot;
+              this.valRes = Math.ceil(1 + Math.random() * (10 * numOf10 - 2));
+              this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 2));
+              this.valTop =  this.valRes * this.valBot;
+
               this.valBotDiv.innerHTML = "÷" + this.valBot.toString();
               break;
           }
