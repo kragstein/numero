@@ -87,8 +87,18 @@ this.numero.game = function (retValue) {
           row.classList.add("row");
           line.forEach(function (digit) {
             var digitButton = button.content.cloneNode(!0);
-            digitButton.firstElementChild.textContent = digit;
+
             digitButton.firstElementChild.dataset.key = digit;
+
+            if (digit === "↩") {
+              digitButton.firstElementChild.innerHTML = "ENTER";
+               // `<game-icon icon="enterKey"></game-icon>`;
+            } else if (digit === "⌫") {
+              digitButton.firstElementChild.innerHTML = "BACK";
+            } else {
+              digitButton.firstElementChild.textContent = digit;
+            }
+
             row.appendChild(digitButton);
           });
           lThis.$keyboard.appendChild(row);
