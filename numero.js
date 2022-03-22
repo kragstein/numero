@@ -296,6 +296,8 @@ this.numero.game = function (retValue) {
         value: function () {
           var rootThis = this;
 
+          currentSettings = loadSettings();
+
           this.shadowRoot.appendChild(numeroRootElement.content.cloneNode(!0));
 
           this.shadowRoot.getElementById("settings-button").
@@ -577,6 +579,7 @@ this.numero.game = function (retValue) {
           Array.from(e.childNodes).forEach((function(a) {
             e.removeChild(a)
           })), e.removeAttribute("open"));
+          saveSettings();
           this.dispatchEvent(new CustomEvent("new-game", {
             bubbles: !0, // bubbles up the DOM tree, to be catched
             composed: !0, // propagates across the shadow DOM to regular DOM
@@ -822,6 +825,21 @@ this.numero.game = function (retValue) {
     return returnFunction;
   }(SomethingElement(HTMLElement));
   customElements.define("game-toast", gameToast);
+
+  // Local storage
+
+  function loadSettings() {
+    var settings = window.localStorage.getItem("numero-settings") ||
+      JSON.stringify(currentSettings);
+    return JSON.parse(settings);
+  }
+
+  function saveSettings() {
+    // var a = za();
+    // ! function(e) {
+    window.localStorage.setItem("numero-settings", JSON.stringify(currentSettings));
+    // }(va(a, e))
+  }
 
   // icons
 
