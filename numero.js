@@ -227,10 +227,30 @@ this.numero.game = function (retValue) {
         pointer-events: none;
         width: fit-content;
       }
+      #board-container {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      #progress {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 2rem;
+      }
+      .progress-count {
+        padding: 5px;
+        margin: 5px;
+        background-color: grey;
+        height: 100%;
+        border-radius: 1rem;
+      }
     </style>
     <header>
       <div class="menu-left">
-        <game-icon icon="numero"></game-icon>
+        <button id="game-menu" class="icon">
+          <game-icon icon="numero"></game-icon>
+        </button>
       </div>
       <div class="title">Numero</div>
       <div class="menu-right">
@@ -244,21 +264,35 @@ this.numero.game = function (retValue) {
     </header>
     <div id="game">
       <div id="board-container">
+        <div id="right-bar-holder"></div>
         <div id="board">
           <div id="valTop"></div>
           <div id="valBot"></div>
           <div class="line"></div>
           <div id="valRes">?</div>
         </div>
+        <div id="progress">
+          <!-- <div class="progress-count"></div>
+          <div class="progress-count"></div>
+          <div class="progress-count"></div>
+          <div class="progress-count"></div>
+          <div class="progress-count"></div>
+          <div class="progress-count"></div>
+          <div class="progress-count"></div>
+          <div class="progress-count"></div>
+          <div class="progress-count"></div>
+          <div class="progress-count"></div> -->
+        </div>
         <!-- <div id="gridboard">
         1
         </div> -->
       </div>
-      <div>
+      <!-- <div>
         <p id="game-status"> Warm Up! </p>
-      </div>
+      </div> -->
       <game-keyboard></game-keyboard>
       <full-page></full-page>
+      <game-modal></game-modal>
     </div>
     <div class="toaster" id="game-toaster"></div>
 
@@ -306,6 +340,11 @@ this.numero.game = function (retValue) {
                rootThis.showSettingsFullPage();
              }));
 
+          this.shadowRoot.getElementById("game-menu").
+            addEventListener("click", (function(e) {
+              rootThis.showGameMenuModal();
+            }))
+
           this.addEventListener("new-game", function() {
             this.newGame();
           });
@@ -337,14 +376,24 @@ this.numero.game = function (retValue) {
       }, {
         key: "showSettingsFullPage",
         value: function () {
-          var modalDiv = this.shadowRoot.querySelector("full-page");
+          var fullPageDiv = this.shadowRoot.querySelector("full-page");
           var s = document.createTextNode("Settings");
-          modalDiv.appendChild(s);
+          fullPageDiv.appendChild(s);
           var settings = document.createElement("game-settings");
           settings.setAttribute("page", "");
           settings.setAttribute("slot", "content");
-          modalDiv.appendChild(settings);
-          modalDiv.setAttribute("open", "");
+          fullPageDiv.appendChild(settings);
+          fullPageDiv.setAttribute("open", "");
+        }
+      }, {
+        key: "showGameMenuModal",
+        value: function() {
+          var e = this.shadowRoot.querySelector("game-modal");
+          a = document.createElement("game-menu");
+          // this.gameStatus === ds && this.rowIndex <= 6 && a.setAttribute("highlight-guess", this.rowIndex);
+          // a.gameApp = this;
+          e.appendChild(a);
+          e.setAttribute("open", "");
         }
       },{
         key: "removeNumber",
@@ -662,8 +711,6 @@ this.numero.game = function (retValue) {
       .selected {
         background-color: LightSkyBlue;
       }
-
-
     </style>
     <section>
       <div class="setting">
@@ -704,8 +751,6 @@ this.numero.game = function (retValue) {
       <div>© Numero 2022</div>
       <div id="puzzle-number">#1</div>
     </div>
-
-
   `;
 
   var settings = function(htmlElement) {
@@ -767,6 +812,165 @@ this.numero.game = function (retValue) {
     return returnFunction;
   }(SomethingElement(HTMLElement));
   customElements.define("game-settings", settings);
+
+  // Modal display
+
+  var gameModalElement = document.createElement("template");
+	gameModalElement.innerHTML = `
+		<style>
+			.overlay {
+				display: none;
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				top: 0;
+				left: 0;
+				justify-content: center;
+				align-items: center;
+				background-color: rgba(255, 255, 255, 0.5);
+				z-index: 3000;
+			}
+			:host([open])
+			.overlay { display: flex; }
+			.content {
+				position: relative;
+				border-radius: 8px;
+				border: 1px solid #f6f7f8;
+				background-color: #ffffff;
+				color: #000000;
+				box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.2);
+				width: 90%;
+				max-height: 90%;
+				overflow-y: auto;
+				animation: SlideIn 200ms;
+				max-width: var(--game-max-width);
+				padding: 16px;
+				box-sizing: border-box;
+			}
+			.content.closing {
+				animation: SlideOut 200ms;
+			}
+			.close-icon {
+				width: 24px;
+				height: 24px;
+				position: absolute;
+				top: 16px;
+				right: 16px;
+			}
+			game-icon {
+				position: fixed;
+				user-select: none;
+				cursor: pointer;
+			}
+			@keyframes SlideIn {
+				0% {
+					transform: translateY(30px);
+					opacity: 0;
+				}
+				100% {
+					transform: translateY(0px);
+					opacity: 1;
+				}
+			}
+			@keyframes SlideOut {
+				0% {
+					transform: translateY(0px);
+					opacity: 1;
+				}
+				90% {
+					opacity: 0;
+				}
+				100% {
+					opacity: 0;
+					transform: translateY(60px);
+				}
+			}
+		</style>
+		<div class="overlay">
+			<div class="content">
+				<slot></slot>
+				<div class="close-icon">
+					<game-icon icon="close"></game-icon>
+				</div>
+			</div>
+		</div>
+    `;
+
+  var gameModal = function(htmlElement) {
+    setPrototype(returnFunction, htmlElement);
+    var element = constructElement(returnFunction);
+
+    function returnFunction() {
+      var e;
+      isInstanceOf(this, returnFunction);
+      (e = element.call(this)).attachShadow({ mode: "open" });
+      return e;
+    }
+
+    addKeyFunction(returnFunction , [{
+      key: "connectedCallback",
+      value: function() {
+        var e = this;
+        this.shadowRoot.appendChild(gameModalElement.content.cloneNode(!0));
+        this.shadowRoot.querySelector(".close-icon").addEventListener("click",
+          function () {
+            e.shadowRoot.querySelector(".content").classList.add("closing");
+        });
+        this.addEventListener("close-modal-menu", (function(a) {
+          e.shadowRoot.querySelector(".content").classList.add("closing");
+        }));
+        this.shadowRoot.addEventListener("animationend", (function(a) {
+          "SlideOut" === a.animationName &&
+          (e.shadowRoot.querySelector(".content").classList.remove("closing"),
+          e.removeChild(e.firstChild), e.removeAttribute("open"))
+        }));
+        this.shadowRoot.addEventListener("click", (function(a) {
+          e.shadowRoot.querySelector(".content").classList.add("closing")
+        }));
+      }
+    }]);
+    return returnFunction;
+  }(SomethingElement(HTMLElement));
+  customElements.define("game-modal", gameModal);
+
+  // Game Menu
+
+  var gameMenuElement = document.createElement("template");
+  gameMenuElement.innerHTML = `
+    <style>
+      h1 {
+        text-align: center;
+      }
+    </style>
+    <div class="menu-container">
+      <h1>Welcome to Numero</h1>
+      <p>You are currently at <b>level 1</b></p>
+      <p>It starts simple, but gets more complicated<p>
+      <p>Finish 10 addition in a row</p>
+    </div>
+  `;
+
+  var gameMenu = function(htmlElement) {
+    setPrototype(returnFunction, htmlElement);
+    var element = constructElement(returnFunction);
+
+    function returnFunction() {
+      var e;
+      isInstanceOf(this, returnFunction);
+      (e = element.call(this)).attachShadow({ mode: "open" });
+      return e;
+    }
+
+    addKeyFunction(returnFunction , [{
+      key: "connectedCallback",
+      value: function() {
+        this.shadowRoot.appendChild(gameMenuElement.content.cloneNode(!0));
+      }
+    }]);
+
+    return returnFunction;
+  }(SomethingElement(HTMLElement));
+  customElements.define("game-menu", gameMenu);
 
   // Toast
 
