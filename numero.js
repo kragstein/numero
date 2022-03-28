@@ -245,6 +245,22 @@ this.numero.game = function (retValue) {
         height: 100%;
         border-radius: 1rem;
       }
+      #progression {
+        position: absolute;
+        top: var(--header-height);
+        right: 0;
+        padding: 8px;
+        color: #787c7e;
+        font-size: 12px;
+      }
+      #timer {
+        position: absolute;
+        top: var(--header-height);
+        left: 0;
+        padding: 8px;
+        color: #787c7e;
+        font-size: 12px;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -263,6 +279,8 @@ this.numero.game = function (retValue) {
       </div>
     </header>
     <div id="game">
+      <div id="progression">1/10</div>
+      <div id="timer">00:00</div>
       <div id="board-container">
         <div id="right-bar-holder"></div>
         <div id="board">
@@ -372,6 +390,28 @@ this.numero.game = function (retValue) {
           }));
 
           this.newGame();
+          this.startTimer();
+        }
+      }, {
+        key: "startTimer",
+        value: function () {
+          var startTime = Date.now();
+          rootThis = this;
+          function updateTimer() {
+            var secondsLapsed = Math.floor((Date.now() - startTime) / 1000)
+            var minutesLapsed = Math.floor(secondsLapsed / 60) ;
+            var timerString = "";
+            if (minutesLapsed == 0) timerString += "00"
+            else if (minutesLapsed < 10) timerString += "0" + minutesLapsed;
+            else timerString += minutesLapsed;
+            timerString += ":";
+            if (secondsLapsed == 0) timerString += "00"
+            else if (secondsLapsed < 10) timerString += "0" + secondsLapsed;
+            else timerString += secondsLapsed;
+            console.log(secondsLapsed + ", " +timerString);
+            rootThis.shadowRoot.querySelector("#timer").innerHTML = timerString;
+          };
+          setInterval(updateTimer, 1000);
         }
       }, {
         key: "showSettingsFullPage",
