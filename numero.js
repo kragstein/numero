@@ -34,6 +34,35 @@ this.numero.game = function (retValue) {
     15: { sizeOperand: "four", operator: "multiplication" },
     16: { sizeOperand: "four", operator: "division" }
   }));
+  var levelMenus = new Map(Object.entries({
+    1: { title: "Welcome to Numero",
+         description: "You start at LeveL 1.\n" +
+                      "It starts simple, but gets more complicated.\n" +
+                      "Finish 10 additions in a row to reach LeveL 2.\n" +
+                      "Try to reach level 16! Good luck!" },
+    2: { title: "LeveL 2",
+         description: "You reached LeveL 2. \nWell done!\n" +
+                      "Can you add bigger numbers?\n" +
+                      "Finish 10 in a row to reach LeveL 3."},
+    3: { title: "Level 3",
+         description: "Can you substract numbers ?\n" +
+                      "Let's start with small numbers...\n" +
+                      "Finish 10 in a row to reach LeveL 4."},
+    4: { title: "LeveL 4",
+         description: "Can you multiply numbers?\n" +
+                      "This is the multiplication table up to 100.\n" +
+                      "Probably the most important exercise in this list!"},
+    5: { title: "LeveL 5",
+         description: "Can you divide numbers?\n" +
+                      "This is the inverse of the previous LeveL\n" +
+                      "Probably easier to guess, since the answer is always" +
+                      " a whole number."},
+    6: { title: "LeveL 6",
+         description: "Can you add bigger numbers?\n" +
+                      "This should already be more challenging.\n" +
+                      "Be sure to carry the extra 1 correctly."},
+
+  }));
 
   // Buttons
   var button = document.createElement("template");
@@ -545,10 +574,12 @@ this.numero.game = function (retValue) {
               this.addToast("WIN");
               this.showNextGameButton(true);
             } else {
-              this.addToast(`Reached Level ${currentLevel} in ${this.secondsLapsed} seconds`);
+
+              // this.addToast(`Reached Level ${currentLevel} in ${this.secondsLapsed} seconds`);
               console.log(`Reached Level ${currentLevel} in ${this.secondsLapsed} seconds`);
               currentLevel += 1;
               this.currentStreak = 1;
+              this.showGameMenuModal();
               this.newGame(currentLevel);
             }
           } else {
@@ -648,7 +679,6 @@ this.numero.game = function (retValue) {
   customElements.define("numero-root", numeroRoot);
 
   // Full page menu
-
   var fullPageElement = document.createElement("template");
     fullPageElement.innerHTML = `
 	<style>
@@ -792,7 +822,6 @@ this.numero.game = function (retValue) {
   customElements.define("full-page", fullPage);
 
   // Settings Menu
-
   var settingsElement = document.createElement("template");
   settingsElement.innerHTML = `
     <style>
@@ -964,7 +993,6 @@ this.numero.game = function (retValue) {
   customElements.define("game-settings", settings);
 
   // Modal display
-
   var gameModalElement = document.createElement("template");
 	gameModalElement.innerHTML = `
 		<style>
@@ -1084,7 +1112,6 @@ this.numero.game = function (retValue) {
   customElements.define("game-modal", gameModal);
 
   // Game Menu
-
   var gameMenuElement = document.createElement("template");
   gameMenuElement.innerHTML = `
     <style>
@@ -1093,10 +1120,6 @@ this.numero.game = function (retValue) {
       }
     </style>
     <div class="menu-container">
-      <h1>Welcome to Numero</h1>
-      <p>You are currently at <b>level 1</b></p>
-      <p>It starts simple, but gets more complicated<p>
-      <p>Finish 10 addition in a row</p>
     </div>
   `;
 
@@ -1114,7 +1137,18 @@ this.numero.game = function (retValue) {
     addKeyFunction(returnFunction , [{
       key: "connectedCallback",
       value: function() {
-        this.shadowRoot.appendChild(gameMenuElement.content.cloneNode(!0));
+        console.log(`Current level: ${currentLevel}.`);
+        var gameMenuNode = gameMenuElement.content.cloneNode(!0);
+        var currentMenu = levelMenus.get(currentLevel.toString());
+        var title = document.createElement("h1");
+        title.innerHTML = `${currentMenu["title"]}`
+        gameMenuNode.append(title);
+        currentMenu["description"].split("\n").forEach((sentence) => {
+          var p = document.createElement("p");
+          p.innerHTML = sentence;
+          gameMenuNode.append(p);
+        });
+        this.shadowRoot.appendChild(gameMenuNode);
       }
     }]);
 
@@ -1123,7 +1157,6 @@ this.numero.game = function (retValue) {
   customElements.define("game-menu", gameMenu);
 
   // Toast
-
   var toastElement = document.createElement("template");
   toastElement.innerHTML = `
   <style>
@@ -1149,6 +1182,7 @@ this.numero.game = function (retValue) {
   </style>
   <div class="toast"></div>
   `;
+
   var gameToast = function(htmlElement) {
     setPrototype(returnFunction, htmlElement);
     var element = constructElement(returnFunction);
@@ -1181,7 +1215,6 @@ this.numero.game = function (retValue) {
   customElements.define("game-toast", gameToast);
 
   // Local storage
-
   function loadSettings() {
     var settings = window.localStorage.getItem("numero-settings") ||
       JSON.stringify(currentSettings);
@@ -1196,7 +1229,6 @@ this.numero.game = function (retValue) {
   }
 
   // icons
-
   var iconSizes = {
     settings: "0 0 45 45",
     reload: "0 0 500 500",
