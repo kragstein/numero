@@ -15,6 +15,26 @@ this.numero.game = function (retValue) {
   var SIZES = ["one", "two", "three", "four"];
   var sizeToInt = { one: 1, two: 2, three: 3, four: 4};
 
+  var currentLevel = 1;
+  var levelMap = new Map(Object.entries({
+    1: { sizeOperand: "one", operator: "addition" },
+    2: { sizeOperand: "two", operator: "addition" },
+    3: { sizeOperand: "one", operator: "substraction" },
+    4: { sizeOperand: "one", operator: "multiplication" },
+    5: { sizeOperand: "one", operator: "division" },
+    6: { sizeOperand: "three", operator: "addition" },
+    7: { sizeOperand: "two", operator: "substraction" },
+    8: { sizeOperand: "three", operator: "substraction" },
+    9: { sizeOperand: "two", operator: "multiplication" },
+    10: { sizeOperand: "two", operator: "division" },
+    11: { sizeOperand: "three", operator: "multiplication" },
+    12: { sizeOperand: "three", operator: "division" },
+    13: { sizeOperand: "four", operator: "addition" },
+    14: { sizeOperand: "four", operator: "substraction" },
+    15: { sizeOperand: "four", operator: "multiplication" },
+    16: { sizeOperand: "four", operator: "division" }
+  }));
+
   // Buttons
   var button = document.createElement("template");
   button.innerHTML = "<button>key</button>";
@@ -261,6 +281,30 @@ this.numero.game = function (retValue) {
         color: #787c7e;
         font-size: 12px;
       }
+      #next-game-container {
+        height: 55px;
+        margin: 0 0 8px 0;
+      }
+      #next-game-button {
+        height: 100%;
+        cursor: pointer;
+        user-select: none;
+        background-color: #d4d7db;
+        color: black;
+        border: 0;
+        border-radius: 4px;
+
+        width: calc(100% - 8px);
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: bold;
+      }
+      .hidden {
+        display: none;
+      }
+      .shown {
+        display: inline-block;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -305,9 +349,10 @@ this.numero.game = function (retValue) {
         1
         </div> -->
       </div>
-      <!-- <div>
-        <p id="game-status"> Warm Up! </p>
-      </div> -->
+      <div id="next-game-container">
+        <button id="next-game-button">Next</button>
+        <!-- <p id="game-status"></p> -->
+      </div>
       <game-keyboard></game-keyboard>
       <full-page></full-page>
       <game-modal></game-modal>
@@ -337,6 +382,16 @@ this.numero.game = function (retValue) {
 
       addKeyValueToDict(NotInitializedError(e), "gameStatus", void 0);
       addKeyValueToDict(NotInitializedError(e), "gameStatusDiv", void 0);
+
+      addKeyValueToDict(NotInitializedError(e), "nextGameButton", void 0);
+      addKeyValueToDict(NotInitializedError(e), "nextGameDiv", void 0);
+
+      addKeyValueToDict(NotInitializedError(e), "currentStreak", 1);
+      addKeyValueToDict(NotInitializedError(e), "streakLength", 10);
+
+      addKeyValueToDict(NotInitializedError(e), "intervalID", void 0);
+      addKeyValueToDict(NotInitializedError(e), "secondsLapsed", 0);
+      addKeyValueToDict(NotInitializedError(e), "streakDiv", void 0);
       // 1 if multiply mode
 
       return e;
@@ -371,6 +426,20 @@ this.numero.game = function (retValue) {
           this.valBotDiv = this.shadowRoot.getElementById("valBot");
           this.valResDiv = this.shadowRoot.getElementById("valRes");
           this.gameStatusDiv = this.shadowRoot.getElementById("game-status");
+          this.nextGameButton = this.shadowRoot.getElementById("next-game-button");
+          this.nextGameDiv = this.shadowRoot.getElementById("next-game-container");
+
+          this.streakDiv = this.shadowRoot.getElementById("progression");
+
+          this.nextGameButton.addEventListener("click", () => {
+            this.dispatchEvent(new CustomEvent("game-key-press", {
+              bubbles: !0, // bubbles up the DOM tree, to be catched
+              composed: !0, // propagates across the shadow DOM to regular DOM
+              detail: {
+                key: "r" // value associated with the event
+              }
+            }));
+          });
 
           this.addEventListener("game-key-press", (function(e) {
             var numberStr = e.detail.key;
@@ -389,7 +458,8 @@ this.numero.game = function (retValue) {
             }
           }));
 
-          this.newGame();
+          this.newGame(1);
+          this.showGameMenuModal();
           this.startTimer();
         }
       }, {
@@ -398,20 +468,28 @@ this.numero.game = function (retValue) {
           var startTime = Date.now();
           rootThis = this;
           function updateTimer() {
-            var secondsLapsed = Math.floor((Date.now() - startTime) / 1000)
-            var minutesLapsed = Math.floor(secondsLapsed / 60) ;
+            // There is no build in function to do this in javascript...
+            rootThis.secondsLapsed = Math.floor((Date.now() - startTime) / 1000)
+            var minutesLapsed = Math.floor(rootThis.secondsLapsed / 60) ;
+            var modSecondsLapsed = rootThis.secondsLapsed % 60;
             var timerString = "";
             if (minutesLapsed == 0) timerString += "00"
             else if (minutesLapsed < 10) timerString += "0" + minutesLapsed;
             else timerString += minutesLapsed;
             timerString += ":";
-            if (secondsLapsed == 0) timerString += "00"
-            else if (secondsLapsed < 10) timerString += "0" + secondsLapsed;
-            else timerString += secondsLapsed;
-            console.log(secondsLapsed + ", " +timerString);
+            if (modSecondsLapsed == 0) timerString += "00"
+            else if (modSecondsLapsed < 10) timerString += "0" + modSecondsLapsed;
+            else timerString += modSecondsLapsed;
+            // console.log(secondsLapsed + ", " + timerString);
             rootThis.shadowRoot.querySelector("#timer").innerHTML = timerString;
+            if (rootThis.secondsLapsed > 3600) {
+              clearInterval(rootThis.intervalID);
+              console.log(`You've left this page open for ${minutesLapsed} ` +
+              `minutes, you should close your tabs more often...`);
+            }
           };
-          setInterval(updateTimer, 1000);
+          this.intervalID = setInterval(updateTimer, 1000);
+          // console.log(`Interval ID: ${this.intervalID}`);
         }
       }, {
         key: "showSettingsFullPage",
@@ -462,14 +540,35 @@ this.numero.game = function (retValue) {
           if (parseInt(this.valResDiv.innerHTML, 10) === this.valRes) {
             this.gameStatus = "ENDEDRIGHT";
             // this.gameStatusDiv.innerHTML = "WIN !" ;
-            this.addToast("WIN");
+            this.currentStreak += 1;
+            if (this.currentStreak < this.streakLength) {
+              this.addToast("WIN");
+              this.showNextGameButton(true);
+            } else {
+              this.addToast(`Reached Level ${currentLevel} in ${this.secondsLapsed} seconds`);
+              console.log(`Reached Level ${currentLevel} in ${this.secondsLapsed} seconds`);
+              currentLevel += 1;
+              this.currentStreak = 1;
+              this.newGame(currentLevel);
+            }
           } else {
             this.addToast("WRONG");
+            this.currentStreak = 1;
           }
+          this.streakDiv.innerHTML = this.currentStreak + "/" + this.streakLength;
         }
       }, {
         key: "newGame",
-        value: function () {
+        value: function (level) {
+
+          this.showNextGameButton(false);
+
+          if (level <= levelMap.size) {
+            currentSettings.sizeOperand = levelMap.get(level.toString())["sizeOperand"];
+            currentSettings.operator = levelMap.get(level.toString())["operator"];
+            console.log(`New level #${level} - ${currentSettings.operator}` +
+              ` by ${currentSettings.sizeOperand}`);
+          }
 
           this.gameStatus = "RUNNING";
 
@@ -515,7 +614,7 @@ this.numero.game = function (retValue) {
 
           this.valResDiv.innerHTML = "?";
 
-          console.log("New game: ", this.valTop, this.valBot, this.valRes);
+          // console.log("New game: ", this.valTop, this.valBot, this.valRes);
         }
       }, {
         key: "addToast",
@@ -528,6 +627,17 @@ this.numero.game = function (retValue) {
             this.shadowRoot.querySelector("#system-toaster").prepend(t);
           } else {
             this.shadowRoot.querySelector("#game-toaster").prepend(t);
+          }
+        }
+      }, {
+        key: "showNextGameButton",
+        value: function (isEnabled) {
+          if (isEnabled) {
+            this.nextGameButton.classList.remove("hidden");
+            this.nextGameButton.classList.add("shown");
+          } else {
+            this.nextGameButton.classList.add("hidden");
+            this.nextGameButton.classList.remove("shown");
           }
         }
       }
@@ -552,7 +662,7 @@ this.numero.game = function (retValue) {
 			justify-content: center;
 			background-color: white;
 			animation: SlideIn 100ms linear;
-			z-index: `.concat(2e3, `;
+			z-index: 2000;
 		}
 		:host([open]) .overlay {
 			display: flex;
@@ -639,7 +749,7 @@ this.numero.game = function (retValue) {
 				<slot name="content"></slot>
 			</div>
 		</div>
-	</div>`);
+	</div>`;
 
   var fullPage = function(htmlElement) {
 
@@ -1326,5 +1436,6 @@ this.numero.game = function (retValue) {
     return returnElement;
   }
 
+  retValue.levelMap = levelMap;
   return retValue;
 }({});
