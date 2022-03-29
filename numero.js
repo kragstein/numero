@@ -35,33 +35,47 @@ this.numero.game = function (retValue) {
     16: { sizeOperand: "four", operator: "division" }
   }));
   var levelMenus = new Map(Object.entries({
-    1: { title: "Welcome to Numero",
-         description: "You start at LeveL 1.\n" +
-                      "It starts simple, but gets more complicated.\n" +
-                      "Finish 10 additions in a row to reach LeveL 2.\n" +
-                      "Try to reach level 16! Good luck!" },
-    2: { title: "LeveL 2",
-         description: "You reached LeveL 2. \nWell done!\n" +
-                      "Can you add bigger numbers?\n" +
-                      "Finish 10 in a row to reach LeveL 3."},
-    3: { title: "Level 3",
-         description: "Can you substract numbers ?\n" +
-                      "Let's start with small numbers...\n" +
-                      "Finish 10 in a row to reach LeveL 4."},
-    4: { title: "LeveL 4",
-         description: "Can you multiply numbers?\n" +
-                      "This is the multiplication table up to 100.\n" +
-                      "Probably the most important exercise in this list!"},
-    5: { title: "LeveL 5",
-         description: "Can you divide numbers?\n" +
-                      "This is the inverse of the previous LeveL\n" +
-                      "Probably easier to guess, since the answer is always" +
-                      " a whole number."},
-    6: { title: "LeveL 6",
-         description: "Can you add bigger numbers?\n" +
-                      "This should already be more challenging.\n" +
-                      "Be sure to carry the extra 1 correctly."},
-
+    1: { title: "Welcome to Numero", description: "You start at LeveL 1.\n" +
+    "It starts simple, but gets more complicated.\nFinish 10 additions in a " +
+    "row to reach LeveL 2.\nTry to reach level 16! Good luck!" },
+    2: { title: "LeveL 2", description: "You reached LeveL 2. \nWell done!\n" +
+    "Can you add bigger numbers?\nFinish 10 in a row to reach LeveL 3."},
+    3: { title: "Level 3", description: "Can you substract numbers ?\n" +
+    "Let's start with small numbers...\nFinish 10 in a row to reach LeveL 4."},
+    4: { title: "LeveL 4", description: "Can you multiply numbers?\n" +
+    "This is the multiplication table up to 100.\nProbably the most important" +
+    " exercise in this game!"},
+    5: { title: "LeveL 5", description: "Can you divide numbers?\n" +
+    "This is the inverse of the previous LeveL\nProbably easier to guess, " +
+    "since the answer is always a whole number."},
+    6: { title: "LeveL 6", description: "Can you add bigger numbers?\n" +
+    "This should already be more challenging.\nBe sure to carry the extra 1 " +
+    "correctly."},
+    7: { title: "LeveL 7", description: "Can you substract bigger numbers?\n" +
+    "Down below one hundred, very useful for percentages.\n Finish 10 in a " +
+    "row to reach LeveL 8."},
+    8: { title: "LeveL 8", description: "Let's substract bigger BIGGER " +
+    "numbers!\nDown from one thousand."},
+    9: { title: "LeveL 9", description: "Can you multiply numbers up to 400?" +
+    "\nYou have completed half of the LeveLs.\nBut it will get much harder " +
+    "from here on."},
+    10: { title: "LeveL 10", description: "Can you divide the numbers down " +
+    "from 400 ?\nThe inverse of the last LeveL."},
+    11: { title: "LeveL 11", description: "Can you multiply numbers up to 900?" +
+    "\nThat's the 30 by 30 multiplication table.\nGood luck with 29 by 29..."},
+    12: { title: "LeveL 12", description: "Can you divide numbers down from " +
+    "900?\nOnly 5 Levels left to complete, but the numbers will only keep " +
+    "getting bigger."},
+    13: { title: "LeveL 13", description: "Last LeveL for additions, up to " +
+    "20.000\nBe sure to cary all the ones..."},
+    14: { title: "LeveL 14", description: "Last LeveL for substractions, down" +
+    " from 20.000\n Good luck!"},
+    15: { title: "LeveL 15", description: "Last LeveL for multiplication, " +
+    " up to 1.600 or 40 by 40.\nBut at this point you should have a good " +
+    "grasp of multiplication, right?"},
+    16: { title: "Level 16", description: "Last LeveL!\nDivide numbers down " +
+    "from 1.600\nGuessing the second digit can make this Level pretty quick" +
+    " though..."}
   }));
 
   // Buttons
@@ -242,12 +256,12 @@ this.numero.game = function (retValue) {
         font-size: 1.2em;
   		}
       #board {
-        width: 4ch; /* to change with the size of the problem */
+        width: 5ch; /* to change with the size of the problem */
         font-size: 3em;
         margin-bottom: 1rem;
         display: grid;
         justify-items: right;
-        border: 1px solid grey;
+        /* border: 1px solid grey; */
       }
       #gridboard {
         font-size: 3rem;
@@ -605,8 +619,8 @@ this.numero.game = function (retValue) {
 
           var numOf10 = sizeToInt[currentSettings.sizeOperand];
 
-          this.valTop = Math.floor(numOf10 + Math.random() * numOf10 * 9)
-          this.valBot = Math.floor(2 + Math.random() * (this.valTop - 2));
+          // this.valTop = Math.floor(numOf10 + Math.random() * numOf10 * 9)
+          // this.valBot = Math.floor(2 + Math.random() * (this.valTop - 2));
 
           switch (currentSettings.operator) {
             case "addition":
@@ -627,14 +641,14 @@ this.numero.game = function (retValue) {
               this.valBotDiv.innerHTML = "-" + this.valBot.toString();
               break;
             case "multiplication":
-              this.valTop = Math.ceil(1 + Math.random() * (10 * numOf10 - 2));
-              this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 2));
+              this.valTop = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
+              this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valRes = this.valTop * this.valBot;
               this.valBotDiv.innerHTML = "*" + this.valBot.toString();
               break;
             case "division":
-              this.valRes = Math.ceil(1 + Math.random() * (10 * numOf10 - 2));
-              this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 2));
+              this.valRes = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
+              this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valTop =  this.valRes * this.valBot;
 
               this.valBotDiv.innerHTML = "÷" + this.valBot.toString();
