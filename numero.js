@@ -16,6 +16,7 @@ this.numero.game = function (retValue) {
   var sizeToInt = { one: 1, two: 2, three: 3, four: 4};
 
   var currentLevel = 1;
+
   var levelMap = new Map(Object.entries({
     1: { sizeOperand: "one", operator: "addition" },
     2: { sizeOperand: "two", operator: "addition" },
@@ -181,7 +182,7 @@ this.numero.game = function (retValue) {
              var s = a.key;
              if (digits.includes(s) || "Backspace" === s || "Enter" === s) {
                lThis.dispatchKeyPressEvent(s);
-             } else if (s.toLowerCase() === "r") {
+             } else if (s.toLowerCase() === "n") {
                lThis.dispatchKeyPressEvent(s);
              }
            }
@@ -348,6 +349,9 @@ this.numero.game = function (retValue) {
       .shown {
         display: inline-block;
       }
+      .underline {
+        text-decoration: underline;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -393,7 +397,9 @@ this.numero.game = function (retValue) {
         </div> -->
       </div>
       <div id="next-game-container">
-        <button id="next-game-button">Next</button>
+        <button id="next-game-button">
+          <span class="underline">N</span>ext
+        </button>
         <!-- <p id="game-status"></p> -->
       </div>
       <game-keyboard></game-keyboard>
@@ -434,6 +440,7 @@ this.numero.game = function (retValue) {
 
       addKeyValueToDict(NotInitializedError(e), "intervalID", void 0);
       addKeyValueToDict(NotInitializedError(e), "secondsLapsed", 0);
+      addKeyValueToDict(NotInitializedError(e), "playTime", 0);
       addKeyValueToDict(NotInitializedError(e), "streakDiv", void 0);
       // 1 if multiply mode
 
@@ -445,6 +452,8 @@ this.numero.game = function (retValue) {
         key: "connectedCallback",
         value: function () {
           var rootThis = this;
+
+          // console.log(`Playtime: ${this.playTime}`)
 
           currentSettings = loadSettings();
 
@@ -479,7 +488,7 @@ this.numero.game = function (retValue) {
               bubbles: !0, // bubbles up the DOM tree, to be catched
               composed: !0, // propagates across the shadow DOM to regular DOM
               detail: {
-                key: "r" // value associated with the event
+                key: "n" // value associated with the event
               }
             }));
           });
@@ -495,15 +504,21 @@ this.numero.game = function (retValue) {
                 this.addNumber(parseInt(numberStr, 10));
               }
             } else {
-              if (numberStr.toLowerCase() === "r") {
+              if (numberStr.toLowerCase() === "n") {
                 this.newGame();
               }
             }
           }));
 
+          this.addEventListener("startTimer", function() {
+            rootThis.startTimer();
+          });
+          this.addEventListener("stopTimer", function() {
+            rootThis.stopTimer();
+          })
+
           this.newGame(1);
           this.showGameMenuModal();
-          this.startTimer();
         }
       }, {
         key: "startTimer",
@@ -512,7 +527,8 @@ this.numero.game = function (retValue) {
           rootThis = this;
           function updateTimer() {
             // There is no build in function to do this in javascript...
-            rootThis.secondsLapsed = Math.floor((Date.now() - startTime) / 1000)
+            rootThis.secondsLapsed = Math.floor(
+              (Date.now() - startTime) / 1000) + rootThis.playTime;
             var minutesLapsed = Math.floor(rootThis.secondsLapsed / 60) ;
             var modSecondsLapsed = rootThis.secondsLapsed % 60;
             var timerString = "";
@@ -533,6 +549,14 @@ this.numero.game = function (retValue) {
           };
           this.intervalID = setInterval(updateTimer, 1000);
           // console.log(`Interval ID: ${this.intervalID}`);
+        }
+      }, {
+        key: "stopTimer",
+        value: function() {
+          this.playTime = this.secondsLapsed;
+          if (this.intervalID) {
+            clearInterval(this.intervalID);
+          }
         }
       }, {
         key: "showSettingsFullPage",
@@ -1108,16 +1132,26 @@ this.numero.game = function (retValue) {
           function () {
             e.shadowRoot.querySelector(".content").classList.add("closing");
         });
+        window.addEventListener("keydown", function(a) {
+          if (a.key === "Escape") {
+            console.log(`Closing the menu with keyboard key: ${a.key}`);
+            e.shadowRoot.querySelector(".content").classList.add("closing");
+          }
+        });
         this.addEventListener("close-modal-menu", (function(a) {
           e.shadowRoot.querySelector(".content").classList.add("closing");
         }));
         this.shadowRoot.addEventListener("animationend", (function(a) {
-          "SlideOut" === a.animationName &&
-          (e.shadowRoot.querySelector(".content").classList.remove("closing"),
-          e.removeChild(e.firstChild), e.removeAttribute("open"))
+          if ("SlideOut" === a.animationName) {
+            e.shadowRoot.querySelector(".content").classList.remove("closing");
+            e.removeChild(e.firstChild);
+            e.removeAttribute("open");
+            this.dispatchEvent(new CustomEvent("startTimer", {
+              bubbles: !0, composed: !0 }));
+          }
         }));
         this.shadowRoot.addEventListener("click", (function(a) {
-          e.shadowRoot.querySelector(".content").classList.add("closing")
+          e.shadowRoot.querySelector(".content").classList.add("closing");
         }));
       }
     }]);
@@ -1151,6 +1185,10 @@ this.numero.game = function (retValue) {
     addKeyFunction(returnFunction , [{
       key: "connectedCallback",
       value: function() {
+
+        this.dispatchEvent(new CustomEvent("stopTimer", {
+          bubbles: !0, composed: !0 }));
+
         console.log(`Current level: ${currentLevel}.`);
         var gameMenuNode = gameMenuElement.content.cloneNode(!0);
         var currentMenu = levelMenus.get(currentLevel.toString());
@@ -1334,7 +1372,7 @@ this.numero.game = function (retValue) {
               bubbles: !0, // bubbles up the DOM tree, to be catched
               composed: !0, // propagates across the shadow DOM to regular DOM
               detail: {
-                key: "r" // value associated with the event
+                key: "n" // value associated with the event
               }
             }));
           });
