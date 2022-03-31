@@ -42,34 +42,34 @@ this.numero.game = function (retValue) {
   var levelMenus = new Map(Object.entries({
     1: { title: "Welcome to Numero", description: "You start at LeveL 1.\n" +
     "It starts simple, but gets more complicated.\nFinish 10 additions in a " +
-    "row to reach LeveL 2.\nTry to reach level 16! Good luck!" },
+    "row to reach LeveL 2.\nTry to reach level 16. Good luck!" },
     2: { title: "Level 2", description: "Can you substract numbers ?\n" +
     "Let's start with small numbers...\nFinish 10 in a row to reach LeveL 3."},
     3: { title: "LeveL 3", description: "You reached LeveL 3. \nWell done!\n" +
-    "Can you add bigger numbers?\nFinish 10 in a row to reach LeveL 3."},
-    4: { title: "LeveL 4", description: "Can you multiply numbers?\n" +
+    "Can you add bigger numbers ?\nFinish 10 in a row to reach LeveL 3."},
+    4: { title: "LeveL 4", description: "Can you multiply numbers ?\n" +
     "This is the multiplication table up to 100.\nProbably the most important" +
     " exercise in this game!"},
-    5: { title: "LeveL 5", description: "Can you divide numbers?\n" +
-    "This is the inverse of the previous LeveL\nProbably easier to guess, " +
+    5: { title: "LeveL 5", description: "Can you divide numbers ?\n" +
+    "This is the inverse of the previous LeveL.\nProbably easier to guess, " +
     "since the answer is always a whole number."},
-    6: { title: "LeveL 6", description: "Can you add bigger numbers?\n" +
+    6: { title: "LeveL 6", description: "Can you add bigger numbers ?\n" +
     "This should already be more challenging.\nBe sure to carry the extra 1 " +
     "correctly."},
-    7: { title: "LeveL 7", description: "Can you substract bigger numbers?\n" +
+    7: { title: "LeveL 7", description: "Can you substract bigger numbers ?\n" +
     "Down below one hundred, very useful for percentages.\n Finish 10 in a " +
     "row to reach LeveL 8."},
     8: { title: "LeveL 8", description: "Let's substract bigger BIGGER " +
     "numbers!\nDown from one thousand."},
-    9: { title: "LeveL 9", description: "Can you multiply numbers up to 400?" +
+    9: { title: "LeveL 9", description: "Can you multiply numbers up to 400 ?" +
     "\nYou have completed half of the LeveLs.\nBut it will get much harder " +
     "from here on."},
     10: { title: "LeveL 10", description: "Can you divide the numbers down " +
     "from 400 ?\nThe inverse of the last LeveL."},
-    11: { title: "LeveL 11", description: "Can you multiply numbers up to 900?" +
+    11: { title: "LeveL 11", description: "Can you multiply numbers up to 900 ?" +
     "\nThat's the 30 by 30 multiplication table.\nGood luck with 29 by 29..."},
     12: { title: "LeveL 12", description: "Can you divide numbers down from " +
-    "900?\nOnly 5 Levels left to complete, but the numbers will only keep " +
+    "900 ?\nOnly 5 Levels left to complete, but the numbers will only keep " +
     "getting bigger."},
     13: { title: "LeveL 13", description: "Last LeveL for additions, up to " +
     "20.000\nBe sure to cary all the ones..."},
@@ -77,7 +77,7 @@ this.numero.game = function (retValue) {
     " from 20.000\n Good luck!"},
     15: { title: "LeveL 15", description: "Last LeveL for multiplication, " +
     " up to 1.600 or 40 by 40.\nBut at this point you should have a good " +
-    "grasp of multiplication, right?"},
+    "grasp of multiplication, right ?"},
     16: { title: "Level 16", description: "Last LeveL!\nDivide numbers down " +
     "from 1.600\nGuessing the second digit can make this Level pretty quick" +
     " though..."},
