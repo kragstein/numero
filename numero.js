@@ -743,16 +743,11 @@ this.numero.game = function (retValue) {
               this.gameWidth = numOf10 + 1;
               break;
             case "substraction":
-              this.valTop = Math.ceil(Math.random() * Math.pow(10, numOf10));
-              this.valBot = Math.ceil(Math.random() * Math.pow(10 - 1, numOf10));
-              if (this.valTop < this.valBot) {
-                var v = this.valBot;
-                this.valBot = this.valTop;
-                this.valTop = v;
-              }
-              this.valRes = this.valTop - this.valBot;
+              this.valBot = Math.ceil(Math.random() * Math.pow(10, numOf10));
+              this.valRes = Math.ceil(Math.random() * Math.pow(10, numOf10));
+              this.valTop = this.valBot + this.valRes;
               this.valBotDiv.innerHTML = "-" + this.valBot.toString();
-              this.gameWidth = numOf10 + 1;
+              this.gameWidth = numOf10 + 2;
               break;
             case "multiplication":
               this.valTop = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
