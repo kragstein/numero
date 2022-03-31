@@ -93,7 +93,7 @@ this.numero.game = function (retValue) {
     ["7", "8", "9"],
     ["4", "5", "6"],
     ["1", "2", "3"],
-    ["0", "↩", "⌫"],
+    ["⌫", "0", "↩"],
   ];
   var digits = [].concat.apply([], digitsKeyboard);
 
@@ -126,6 +126,11 @@ this.numero.game = function (retValue) {
     			align-items: center;
     			text-transform: uppercase;
     			-webkit-tap-highlight-color: rgba(0,0,0,0.3);
+        }
+        @media (max-height: 600px) {
+          button {
+            height: 45px;
+          }
         }
     </style>
     <div id="keyboard"></div>
@@ -254,18 +259,39 @@ this.numero.game = function (retValue) {
   			width: 100%;
   			max-width: var(--game-max-width);
   			margin: 0 auto;
-  			height: var(--keyboard-height);
+  			height: 250px;
   			display: flex;
   			flex-direction: column;
         font-size: 1.2em;
   		}
       #board {
         width: 5ch; /* to change with the size of the problem */
-        font-size: 3em;
-        margin-bottom: 1rem;
+        font-size: 4em;
+        margin-bottom: -2rem;
         display: grid;
         justify-items: right;
         /* border: 1px solid grey; */
+      }
+      #next-game-container {
+        height: 55px;
+        margin: 0 0 8px 0;
+      }
+      @media (max-height: 600px) {
+        game-keyboard {
+          max-width: 350px;
+          height: 220px;
+        }
+        #next-game-container {
+          height: 35px;
+          max-width: 350px;
+          display: flex;
+          margin: 0 auto;
+          width: 100%;
+          margin-bottom: 8px;
+        }
+        #board {
+          font-size: 2.3em;
+        }
       }
       #gridboard {
         font-size: 3rem;
@@ -327,10 +353,6 @@ this.numero.game = function (retValue) {
         padding: 8px;
         color: #787c7e;
         font-size: 12px;
-      }
-      #next-game-container {
-        height: 55px;
-        margin: 0 0 8px 0;
       }
       #next-game-button {
         height: 100%;
