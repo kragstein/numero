@@ -97,6 +97,23 @@ this.numero.game = function (retValue) {
   ];
   var digits = [].concat.apply([], digitsKeyboard);
 
+  // Formatting time to string
+  function timeToString(secondsLapsed) {
+    // There is no build in function to do this in javascript...
+    var retString = "";
+    var minutesLapsed = Math.floor(secondsLapsed / 60) ;
+    var modSecondsLapsed = secondsLapsed % 60;
+
+    if (minutesLapsed == 0) retString += "00"
+    else if (minutesLapsed < 10) retString += "0" + minutesLapsed;
+    else retString += minutesLapsed;
+    retString += ":";
+    if (modSecondsLapsed == 0) retString += "00"
+    else if (modSecondsLapsed < 10) retString += "0" + modSecondsLapsed;
+    else retString += modSecondsLapsed;
+    return retString;
+  }
+
   // Keyboard tag
   var keyboardHTMLElement = document.createElement("template");
   keyboardHTMLElement.innerHTML = `
@@ -393,6 +410,9 @@ this.numero.game = function (retValue) {
         display: flex;
         flex-direction: column;
       }
+      #best-results-title{
+        font-size: 1.5em;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -583,19 +603,12 @@ this.numero.game = function (retValue) {
           this.startTime = Date.now();
           rootThis = this;
           function updateTimer() {
-            // There is no build in function to do this in javascript...
+
             secondsLapsed = Math.floor(
               (Date.now() - rootThis.startTime) / 1000) + rootThis.playTime;
-            var minutesLapsed = Math.floor(secondsLapsed / 60) ;
-            var modSecondsLapsed = secondsLapsed % 60;
-            var timerString = "";
-            if (minutesLapsed == 0) timerString += "00"
-            else if (minutesLapsed < 10) timerString += "0" + minutesLapsed;
-            else timerString += minutesLapsed;
-            timerString += ":";
-            if (modSecondsLapsed == 0) timerString += "00"
-            else if (modSecondsLapsed < 10) timerString += "0" + modSecondsLapsed;
-            else timerString += modSecondsLapsed;
+
+            var timerString = timeToString(secondsLapsed);
+
             rootThis.shadowRoot.querySelector("#timer").innerHTML = timerString;
             if (secondsLapsed > 3600) {
               clearInterval(rootThis.intervalID);
@@ -617,7 +630,9 @@ this.numero.game = function (retValue) {
         key: "showSettingsFullPage",
         value: function () {
           var fullPageDiv = this.shadowRoot.querySelector("full-page");
-          var s = document.createTextNode("Settings");
+          var s = document.createElement("p");
+          s.setAttribute("id", "best-results-title");
+          s.innerHTML = "Best results";
           fullPageDiv.appendChild(s);
           var settings = document.createElement("game-settings");
           settings.setAttribute("page", "");
@@ -765,6 +780,8 @@ this.numero.game = function (retValue) {
 
           this.valTopDiv.innerHTML = this.valTop.toString();
           this.valResDiv.innerHTML = "?";
+
+          console.log(`Result ${this.valRes}`);
 
           this.resizeBoard();
         }
@@ -957,7 +974,19 @@ this.numero.game = function (retValue) {
         justify-content: space-between;
         align-items: center;
         border-bottom: 1px solid #d4d5d9;
-        padding: 16px 0;
+        padding: 8px 0;
+      }
+      .result {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #d4d5d9;
+        padding: 8px 0;
+      }
+      @media (max-height: 600px) {
+        .result {
+          padding: 4px 0;
+        }
       }
       .text {
         padding-right: 8px;
@@ -1018,8 +1047,12 @@ this.numero.game = function (retValue) {
         background-color: LightSkyBlue;
       }
     </style>
-    <section>
-      <div class="setting">
+
+    <section id="best-results-container">
+    </section>
+
+    <section style="display: none;">
+      <div class="setting" >
         <div class="text">
           <div class="title">Operation</div>
           <div class="description">Which operation do you want to play?</div>
@@ -1044,7 +1077,7 @@ this.numero.game = function (retValue) {
         </div>
       </div>
     </section>
-    <section>
+    <section style="margin-bottom: 16px;">
       <div class="setting">
         <div class="text">
           <div class="title">More ?</div>
@@ -1053,10 +1086,10 @@ this.numero.game = function (retValue) {
       </div>
     </section>
 
-    <div id="footnote">
+    <!-- <div id="footnote">
       <div>© Numero 2022</div>
       <div id="puzzle-number">#1</div>
-    </div>
+    </div> -->
   `;
 
   var settings = function(htmlElement) {
@@ -1075,6 +1108,46 @@ this.numero.game = function (retValue) {
       value: function() {
         var lThis = this;
         this.shadowRoot.appendChild(settingsElement.content.cloneNode(!0));
+
+        var bestResultsContainer = this.shadowRoot
+          .querySelector("#best-results-container");
+
+        if (bestStats[1]) {
+          var titleDiv = document.createElement("div");
+          titleDiv.innerHTML = `
+          <div class="">
+            <div class="result">
+              <div class="title"></div>
+              <div class="title">Best time</div>
+            </div>
+          </div>
+          `;
+          bestResultsContainer.append(titleDiv);
+
+          for (var i = 16; i > 0; i--) {
+            if (bestStats[i]) {
+              var levelResult = document.createElement("div");
+              levelResult.innerHTML = `
+              <div class="">
+                <div class="result">
+                  <div class="title">Level ${i}</div>
+                  <div class="title">${timeToString(bestStats[i])}</div>
+                </div>
+              </div>
+              `;
+              bestResultsContainer.append(levelResult);
+            }
+          }
+        } else {
+          var noResultsDiv = document.createElement("div");
+          titleDiv.innerHTML = `
+          <div class="">
+            <div class="result">
+              <div class="title">No results yet...</div>
+            </div>
+          </div>
+          `;
+        }
 
         var settingsButtons = this.shadowRoot.querySelectorAll("button");
 
