@@ -167,7 +167,6 @@ this.numero.game = function (retValue) {
 
             if (digit === "↩") {
               digitButton.firstElementChild.innerHTML = "ENTER";
-               // `<game-icon icon="enterKey"></game-icon>`;
             } else if (digit === "⌫") {
               digitButton.firstElementChild.innerHTML = "BACK";
             } else {
@@ -389,6 +388,11 @@ this.numero.game = function (retValue) {
         color: #787c7e;
         font-size: 12px;
       }
+      validation-menu {
+        align-content: center;
+        display: flex;
+        flex-direction: column;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -471,7 +475,6 @@ this.numero.game = function (retValue) {
       addKeyValueToDict(NotInitializedError(e), "gameWidth", 2);
 
       addKeyValueToDict(NotInitializedError(e), "startTime", void 0);
-      // 1 if multiply mode
 
       return e;
     }
@@ -481,9 +484,6 @@ this.numero.game = function (retValue) {
         key: "connectedCallback",
         value: function () {
           var rootThis = this;
-
-          // console.log(`Playtime: ${this.playTime}`)
-
           currentSettings = loadSettings();
 
           this.shadowRoot.appendChild(numeroRootElement.content.cloneNode(!0));
@@ -493,6 +493,11 @@ this.numero.game = function (retValue) {
                // this will be the settings button here
                rootThis.showSettingsFullPage();
              }));
+
+          this.shadowRoot.getElementById("reload-button").
+            addEventListener("click", function (e) {
+              rootThis.showValidationMenuModal();
+            });
 
           this.shadowRoot.getElementById("game-menu").
             addEventListener("click", (function(e) {
@@ -591,7 +596,6 @@ this.numero.game = function (retValue) {
             if (modSecondsLapsed == 0) timerString += "00"
             else if (modSecondsLapsed < 10) timerString += "0" + modSecondsLapsed;
             else timerString += modSecondsLapsed;
-            // console.log(secondsLapsed + ", " + timerString);
             rootThis.shadowRoot.querySelector("#timer").innerHTML = timerString;
             if (secondsLapsed > 3600) {
               clearInterval(rootThis.intervalID);
@@ -600,7 +604,6 @@ this.numero.game = function (retValue) {
             }
           };
           this.intervalID = setInterval(updateTimer, 1000);
-          // console.log(`Interval ID: ${this.intervalID}`);
         }
       }, {
         key: "stopTimer",
@@ -623,12 +626,18 @@ this.numero.game = function (retValue) {
           fullPageDiv.setAttribute("open", "");
         }
       }, {
+        key: "showValidationMenuModal",
+        value: function () {
+          var e = this.shadowRoot.querySelector("game-modal");
+          a = document.createElement("validation-menu");
+          e.appendChild(a);
+          e.setAttribute("open", "");
+        }
+      }, {
         key: "showGameMenuModal",
         value: function() {
           var e = this.shadowRoot.querySelector("game-modal");
           a = document.createElement("game-menu");
-          // this.gameStatus === ds && this.rowIndex <= 6 && a.setAttribute("highlight-guess", this.rowIndex);
-          // a.gameApp = this;
           e.appendChild(a);
           e.setAttribute("open", "");
         }
@@ -642,7 +651,6 @@ this.numero.game = function (retValue) {
           var innerHTML = this.valResDiv.innerHTML.slice(0,
             this.valResDiv.innerHTML.length -1);
           this.valResDiv.innerHTML = innerHTML;
-          // .slice(0, this.boardState[this.rowIndex].length - 1);
         }
       }, {
         key: "addNumber",
@@ -660,7 +668,6 @@ this.numero.game = function (retValue) {
         value: function() {
           if (parseInt(this.valResDiv.innerHTML, 10) === this.valRes) {
             this.gameStatus = "ENDEDRIGHT";
-            // this.gameStatusDiv.innerHTML = "WIN !" ;
             this.currentStreak += 1;
             if (this.currentStreak < this.streakLength) {
               this.addToast("WIN");
@@ -710,11 +717,7 @@ this.numero.game = function (retValue) {
           }
 
           this.gameStatus = "RUNNING";
-
           var numOf10 = sizeToInt[currentSettings.sizeOperand];
-
-          // this.valTop = Math.floor(numOf10 + Math.random() * numOf10 * 9)
-          // this.valBot = Math.floor(2 + Math.random() * (this.valTop - 2));
 
           switch (currentSettings.operator) {
             case "addition":
@@ -778,7 +781,6 @@ this.numero.game = function (retValue) {
           var s = arguments.length > 2 && void 0 !== arguments[2] && arguments[2];
           var t = document.createElement("game-toast");
           t.setAttribute("text", e);
-          // a && t.setAttribute("duration", a);
           if (s) {
             this.shadowRoot.querySelector("#system-toaster").prepend(t);
           } else {
@@ -1087,8 +1089,6 @@ this.numero.game = function (retValue) {
             lThis.render();
           });
         });
-        // var pNum = this.shadowRoot.querySelector("#puzzle-number");
-        // pNum.innerHTML = "#" + solutionNum;
         this.render();
       }
     }, {
@@ -1253,7 +1253,7 @@ this.numero.game = function (retValue) {
         text-align: center;
       }
     </style>
-    <div class="menu-container">
+    <div id="menu-container">
     </div>
   `;
 
@@ -1275,7 +1275,6 @@ this.numero.game = function (retValue) {
         this.dispatchEvent(new CustomEvent("stopTimer", {
           bubbles: !0, composed: !0 }));
 
-        // console.log(`Current level: ${currentLevel}.`);
         var gameMenuNode = gameMenuElement.content.cloneNode(!0);
         var currentMenu = levelMenus.get(currentLevel.toString());
         var title = document.createElement("h1");
@@ -1288,8 +1287,6 @@ this.numero.game = function (retValue) {
         });
 
         if (currentLevel > 1 && bestStats[currentLevel - 1]) {
-          // var bestResult = document.createElement("h3");
-          // bestResult.innerHTML = "Best result:";
           var currentLevelTime = document.createElement("p");
           var seconds = secondsLapsed;
           currentLevelTime.innerHTML =
@@ -1298,7 +1295,6 @@ this.numero.game = function (retValue) {
           var bestLevelTime = document.createElement("p");
           bestLevelTime.innerHTML = `<b>Best Result:</b> LeveL ${currentLevel - 1} in ` +
           `${bestStats[currentLevel - 1]} seconds`;
-          // gameMenuNode.append(bestResult);
           gameMenuNode.append(bestLevelTime);
           gameMenuNode.append(currentLevelTime);
         }
@@ -1310,6 +1306,75 @@ this.numero.game = function (retValue) {
     return returnFunction;
   }(SomethingElement(HTMLElement));
   customElements.define("game-menu", gameMenu);
+
+  // Validation Menu
+  // Game Menu
+  var validationMenuElement = document.createElement("template");
+  validationMenuElement.innerHTML = `
+    <style>
+      h1 {
+        text-align: center;
+      }
+      button {
+        background-color: black;
+        color: white;
+        padding: 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: large;
+      }
+    </style>
+    <div id="menu-container">
+    </div>
+  `;
+
+  var validationMenu = function(htmlElement) {
+    setPrototype(returnFunction, htmlElement);
+    var element = constructElement(returnFunction);
+
+    function returnFunction() {
+      var e;
+      isInstanceOf(this, returnFunction);
+      (e = element.call(this)).attachShadow({ mode: "open" });
+      return e;
+    }
+
+    addKeyFunction(returnFunction , [{
+      key: "connectedCallback",
+      value: function() {
+
+        this.dispatchEvent(new CustomEvent("stopTimer", {
+          bubbles: !0, composed: !0 }));
+
+        var gameMenuNode = validationMenuElement.content.cloneNode(!0);
+
+        var title = document.createElement("h1");
+        title.innerHTML = `Restart game?`
+        gameMenuNode.append(title);
+
+        var p = document.createElement("div");
+        p.innerHTML = `<p>Do you want to restart the game?</p>`+
+        `<p>You will loose your progress and start from LeveL 1.</p>`;
+        gameMenuNode.append(p);
+
+        var b = document.createElement("button");
+        b.innerText = "Restart";
+        gameMenuNode.append(b);
+
+        b.addEventListener("click", function () {
+          this.dispatchEvent(new CustomEvent("game-key-press", {
+            bubbles: !0, composed: !0,
+            detail: { key: "reload" }
+          }));
+        });
+
+        this.shadowRoot.appendChild(gameMenuNode);
+      }
+    }]);
+
+    return returnFunction;
+  }(SomethingElement(HTMLElement));
+  customElements.define("validation-menu", validationMenu);
 
   // Toast
   var toastElement = document.createElement("template");
@@ -1473,19 +1538,6 @@ this.numero.game = function (retValue) {
         var e = this.getAttribute("icon");
         this.shadowRoot.querySelector("path").setAttribute("d", iconPaths[e]);
         this.shadowRoot.querySelector("svg").setAttribute("viewBox", iconSizes[e]);
-
-        if (e === "reload") {
-          this.addEventListener("click", function(a) {
-            console.log("reload");
-            this.dispatchEvent(new CustomEvent("game-key-press", {
-              bubbles: !0, // bubbles up the DOM tree, to be catched
-              composed: !0, // propagates across the shadow DOM to regular DOM
-              detail: {
-                key: "reload" // value associated with the event
-              }
-            }));
-          });
-        }
       }
     }]);
 
