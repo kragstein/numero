@@ -16,11 +16,15 @@ this.numero.game = function (retValue) {
   var sizeToInt = { one: 1, two: 2, three: 3, four: 4};
 
   var currentLevel = 1;
+  var bestStats = {};
+  var bestLevel = 1;
+  var bestTimeSeconds = 0;
+  var secondsLapsed = 0;
 
   var levelMap = new Map(Object.entries({
     1: { sizeOperand: "one", operator: "addition" },
-    2: { sizeOperand: "two", operator: "addition" },
-    3: { sizeOperand: "one", operator: "substraction" },
+    2: { sizeOperand: "one", operator: "substraction" },
+    3: { sizeOperand: "two", operator: "addition" },
     4: { sizeOperand: "one", operator: "multiplication" },
     5: { sizeOperand: "one", operator: "division" },
     6: { sizeOperand: "three", operator: "addition" },
@@ -39,10 +43,10 @@ this.numero.game = function (retValue) {
     1: { title: "Welcome to Numero", description: "You start at LeveL 1.\n" +
     "It starts simple, but gets more complicated.\nFinish 10 additions in a " +
     "row to reach LeveL 2.\nTry to reach level 16! Good luck!" },
-    2: { title: "LeveL 2", description: "You reached LeveL 2. \nWell done!\n" +
+    2: { title: "Level 2", description: "Can you substract numbers ?\n" +
+    "Let's start with small numbers...\nFinish 10 in a row to reach LeveL 3."},
+    3: { title: "LeveL 3", description: "You reached LeveL 3. \nWell done!\n" +
     "Can you add bigger numbers?\nFinish 10 in a row to reach LeveL 3."},
-    3: { title: "Level 3", description: "Can you substract numbers ?\n" +
-    "Let's start with small numbers...\nFinish 10 in a row to reach LeveL 4."},
     4: { title: "LeveL 4", description: "Can you multiply numbers?\n" +
     "This is the multiplication table up to 100.\nProbably the most important" +
     " exercise in this game!"},
@@ -76,7 +80,9 @@ this.numero.game = function (retValue) {
     "grasp of multiplication, right?"},
     16: { title: "Level 16", description: "Last LeveL!\nDivide numbers down " +
     "from 1.600\nGuessing the second digit can make this Level pretty quick" +
-    " though..."}
+    " though..."},
+    17: { title: "WIN !", description: `You've won the game!\nCongratulations` +
+    `\nNow try to beat your own time of ${secondsLapsed} seconds.`}
   }));
 
   // Buttons
@@ -93,7 +99,6 @@ this.numero.game = function (retValue) {
 
   // Keyboard tag
   var keyboardHTMLElement = document.createElement("template");
-
   keyboardHTMLElement.innerHTML = `
     <style>
       .row {
@@ -205,9 +210,7 @@ this.numero.game = function (retValue) {
   }(SomethingElement(HTMLElement));
   customElements.define("game-keyboard", keyboard);
 
-
   // Numero Root
-
   var numeroRootElement = document.createElement("template");
   numeroRootElement.innerHTML = `
     <style>
@@ -352,6 +355,18 @@ this.numero.game = function (retValue) {
       .underline {
         text-decoration: underline;
       }
+      #LeveL-num {
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin-left: auto;
+        margin-right: auto;
+        width: 14ex;
+        top: var(--header-height);
+        padding: 8px;
+        color: #787c7e;
+        font-size: 12px;
+      }
     </style>
     <header>
       <div class="menu-left">
@@ -371,6 +386,7 @@ this.numero.game = function (retValue) {
     </header>
     <div id="game">
       <div id="progression">1/10</div>
+      <div id="LeveL-num">LeveL 1</div>
       <div id="timer">00:00</div>
       <div id="board-container">
         <div id="right-bar-holder"></div>
@@ -439,9 +455,11 @@ this.numero.game = function (retValue) {
       addKeyValueToDict(NotInitializedError(e), "streakLength", 10);
 
       addKeyValueToDict(NotInitializedError(e), "intervalID", void 0);
-      addKeyValueToDict(NotInitializedError(e), "secondsLapsed", 0);
       addKeyValueToDict(NotInitializedError(e), "playTime", 0);
       addKeyValueToDict(NotInitializedError(e), "streakDiv", void 0);
+
+      addKeyValueToDict(NotInitializedError(e), "$boardDiv", void 0);
+      addKeyValueToDict(NotInitializedError(e), "gameWidth", 2);
       // 1 if multiply mode
 
       return e;
@@ -480,6 +498,7 @@ this.numero.game = function (retValue) {
           this.gameStatusDiv = this.shadowRoot.getElementById("game-status");
           this.nextGameButton = this.shadowRoot.getElementById("next-game-button");
           this.nextGameDiv = this.shadowRoot.getElementById("next-game-container");
+          this.$boardDiv = this.shadowRoot.getElementById("board");
 
           this.streakDiv = this.shadowRoot.getElementById("progression");
 
@@ -517,6 +536,7 @@ this.numero.game = function (retValue) {
             rootThis.stopTimer();
           })
 
+
           this.newGame(1);
           this.showGameMenuModal();
         }
@@ -527,10 +547,10 @@ this.numero.game = function (retValue) {
           rootThis = this;
           function updateTimer() {
             // There is no build in function to do this in javascript...
-            rootThis.secondsLapsed = Math.floor(
+            secondsLapsed = Math.floor(
               (Date.now() - startTime) / 1000) + rootThis.playTime;
-            var minutesLapsed = Math.floor(rootThis.secondsLapsed / 60) ;
-            var modSecondsLapsed = rootThis.secondsLapsed % 60;
+            var minutesLapsed = Math.floor(secondsLapsed / 60) ;
+            var modSecondsLapsed = secondsLapsed % 60;
             var timerString = "";
             if (minutesLapsed == 0) timerString += "00"
             else if (minutesLapsed < 10) timerString += "0" + minutesLapsed;
@@ -541,7 +561,7 @@ this.numero.game = function (retValue) {
             else timerString += modSecondsLapsed;
             // console.log(secondsLapsed + ", " + timerString);
             rootThis.shadowRoot.querySelector("#timer").innerHTML = timerString;
-            if (rootThis.secondsLapsed > 3600) {
+            if (secondsLapsed > 3600) {
               clearInterval(rootThis.intervalID);
               console.log(`You've left this page open for ${minutesLapsed} ` +
               `minutes, you should close your tabs more often...`);
@@ -553,7 +573,7 @@ this.numero.game = function (retValue) {
       }, {
         key: "stopTimer",
         value: function() {
-          this.playTime = this.secondsLapsed;
+          this.playTime = secondsLapsed;
           if (this.intervalID) {
             clearInterval(this.intervalID);
           }
@@ -598,7 +618,9 @@ this.numero.game = function (retValue) {
           if (this.valResDiv.innerHTML === "?") {
               this.valResDiv.innerHTML = n;
           } else {
-            this.valResDiv.innerHTML += n;
+            if (this.valResDiv.innerHTML.length < this.gameWidth) {
+              this.valResDiv.innerHTML += n;
+            }
           }
         }
       }, {
@@ -612,10 +634,26 @@ this.numero.game = function (retValue) {
               this.addToast("WIN");
               this.showNextGameButton(true);
             } else {
+              console.log(`Reached Level ${currentLevel} in ${secondsLapsed} seconds`);
 
-              // this.addToast(`Reached Level ${currentLevel} in ${this.secondsLapsed} seconds`);
-              console.log(`Reached Level ${currentLevel} in ${this.secondsLapsed} seconds`);
+              if (bestStats.hasOwnProperty(currentLevel)) {
+                if (secondsLapsed < bestStats[currentLevel]) {
+                  // New best time for this level
+                  var previousTime = bestStats[currentLevel];
+                  bestStats[currentLevel] = secondsLapsed;
+                  console.log(`Reached a new record: `+
+                    `LeveL ${currentLevel} in ${secondsLapsed}`);
+                }
+              } else {
+                // First time we reach this level
+                bestStats[currentLevel] = secondsLapsed;
+              }
               currentLevel += 1;
+
+              this.shadowRoot.querySelector("#LeveL-num").innerHTML =
+                `LeveL ${currentLevel}`
+
+              saveSettings();
               this.currentStreak = 1;
               this.showGameMenuModal();
               this.newGame(currentLevel);
@@ -649,13 +687,14 @@ this.numero.game = function (retValue) {
           switch (currentSettings.operator) {
             case "addition":
               this.valTop = Math.ceil(Math.random() * Math.pow(10, numOf10));
-              this.valBot = Math.ceil(Math.random() * Math.pow(10, numOf10));
+              this.valBot = Math.ceil(Math.random() * Math.pow(10 - 1, numOf10));
               this.valRes = this.valTop + this.valBot;
               this.valBotDiv.innerHTML = "+" + this.valBot.toString();
+              this.gameWidth = numOf10 + 1;
               break;
             case "substraction":
               this.valTop = Math.ceil(Math.random() * Math.pow(10, numOf10));
-              this.valBot = Math.ceil(Math.random() * Math.pow(10, numOf10));
+              this.valBot = Math.ceil(Math.random() * Math.pow(10 - 1, numOf10));
               if (this.valTop < this.valBot) {
                 var v = this.valBot;
                 this.valBot = this.valTop;
@@ -663,27 +702,43 @@ this.numero.game = function (retValue) {
               }
               this.valRes = this.valTop - this.valBot;
               this.valBotDiv.innerHTML = "-" + this.valBot.toString();
+              this.gameWidth = numOf10 + 1;
               break;
             case "multiplication":
               this.valTop = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valRes = this.valTop * this.valBot;
               this.valBotDiv.innerHTML = "*" + this.valBot.toString();
+              if (numOf10 == 1) {
+                this.gameWidth = 3;
+              } else {
+                this.gameWidth = 4;
+              }
               break;
             case "division":
               this.valRes = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valTop =  this.valRes * this.valBot;
-
               this.valBotDiv.innerHTML = "÷" + this.valBot.toString();
+              if (numOf10 == 1) {
+                this.gameWidth = 3;
+              } else {
+                this.gameWidth = 4;
+              }
               break;
           }
 
           this.valTopDiv.innerHTML = this.valTop.toString();
-
           this.valResDiv.innerHTML = "?";
 
-          // console.log("New game: ", this.valTop, this.valBot, this.valRes);
+          this.resizeBoard();
+        }
+      }, {
+        key: "resizeBoard",
+        value: function() {
+          var woop = this.$boardDiv;
+          woop.style.width = this.gameWidth + "ch";
+          var a = 2;
         }
       }, {
         key: "addToast",
@@ -1134,7 +1189,6 @@ this.numero.game = function (retValue) {
         });
         window.addEventListener("keydown", function(a) {
           if (a.key === "Escape") {
-            console.log(`Closing the menu with keyboard key: ${a.key}`);
             e.shadowRoot.querySelector(".content").classList.add("closing");
           }
         });
@@ -1189,7 +1243,7 @@ this.numero.game = function (retValue) {
         this.dispatchEvent(new CustomEvent("stopTimer", {
           bubbles: !0, composed: !0 }));
 
-        console.log(`Current level: ${currentLevel}.`);
+        // console.log(`Current level: ${currentLevel}.`);
         var gameMenuNode = gameMenuElement.content.cloneNode(!0);
         var currentMenu = levelMenus.get(currentLevel.toString());
         var title = document.createElement("h1");
@@ -1200,6 +1254,23 @@ this.numero.game = function (retValue) {
           p.innerHTML = sentence;
           gameMenuNode.append(p);
         });
+
+        if (currentLevel > 1 && bestStats[currentLevel - 1]) {
+          // var bestResult = document.createElement("h3");
+          // bestResult.innerHTML = "Best result:";
+          var currentLevelTime = document.createElement("p");
+          var seconds = secondsLapsed;
+          currentLevelTime.innerHTML =
+            `<b>Current Result:</b> Level ${currentLevel - 1} in ${secondsLapsed} seconds`;
+
+          var bestLevelTime = document.createElement("p");
+          bestLevelTime.innerHTML = `<b>Best Result:</b> LeveL ${currentLevel - 1} in ` +
+          `${bestStats[currentLevel - 1]} seconds`;
+          // gameMenuNode.append(bestResult);
+          gameMenuNode.append(bestLevelTime);
+          gameMenuNode.append(currentLevelTime);
+        }
+
         this.shadowRoot.appendChild(gameMenuNode);
       }
     }]);
@@ -1270,14 +1341,20 @@ this.numero.game = function (retValue) {
   function loadSettings() {
     var settings = window.localStorage.getItem("numero-settings") ||
       JSON.stringify(currentSettings);
+    bestLevel = parseInt(window.localStorage.getItem(
+      "numero-best-level"), 10) || 1;
+    bestTimeSeconds = parseInt(window.localStorage.getItem(
+      "numero-best-time-seconds"), 10) || 0;
+    bestStats = JSON.parse(window.localStorage.getItem("numero-best-stats")) || {};
+
     return JSON.parse(settings);
   }
 
   function saveSettings() {
-    // var a = za();
-    // ! function(e) {
     window.localStorage.setItem("numero-settings", JSON.stringify(currentSettings));
-    // }(va(a, e))
+    window.localStorage.setItem("numero-best-level", JSON.stringify(bestLevel));
+    window.localStorage.setItem("numero-best-time-seconds", JSON.stringify(bestTimeSeconds));
+    window.localStorage.setItem("numero-best-stats", JSON.stringify(bestStats));
   }
 
   // icons
