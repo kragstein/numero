@@ -595,7 +595,7 @@ this.numero.game = function (retValue) {
           this.shadowRoot.querySelector("#LeveL-num").innerHTML =
             `LeveL ${currentLevel}`
           this.streakDiv.innerHTML = this.currentStreak + "/" + this.streakLength;
-          console.log("Reloaded...");
+          // console.log("Reloaded...");
         }
       }, {
         key: "startTimer",
@@ -776,7 +776,7 @@ this.numero.game = function (retValue) {
           this.valTopDiv.innerHTML = this.valTop.toString();
           this.valResDiv.innerHTML = "?";
 
-          console.log(`Result ${this.valRes}`);
+          // console.log(`Result ${this.valRes}`);
 
           this.resizeBoard();
         }
@@ -1162,8 +1162,8 @@ this.numero.game = function (retValue) {
     }, {
       key: "render",
       value: function() {
-        console.log(`New settings: ${currentSettings.operator} ` +
-          `by ${currentSettings.sizeOperand}`);
+        // console.log(`New settings: ${currentSettings.operator} ` +
+        //   `by ${currentSettings.sizeOperand}`);
 
         var settingsButtons = this.shadowRoot.querySelectorAll("button");
         settingsButtons.forEach((item, i) => {
