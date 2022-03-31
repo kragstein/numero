@@ -142,16 +142,59 @@ this.numero.game = function (retValue) {
     			justify-content: center;
     			align-items: center;
     			text-transform: uppercase;
-    			-webkit-tap-highlight-color: rgba(0,0,0,0.3);
         }
-        @media (max-height: 600px) {
+        @media (max-height: 600px) and (orientation: landscape) {
           button {
             height: 45px;
           }
+          #keyboard-padding {
+            flex-shrink: 0;
+            flex-grow: 1;
+          }
+        }
+        @media (orientation: landscape) and (max-height: 600px) {
+          #next-game-container {
+            flex-shrink: 0;
+          }
+        }
+        #next-game-container {
+          height: 55px;
+          margin-bottom: 8px;
+        }
+        #next-game-button {
+          height: 100%;
+          cursor: pointer;
+          user-select: none;
+          background-color: #d4d7db;
+          color: black;
+          border: 0;
+          border-radius: 4px;
+          width: calc(100% - 8px);
+          font-family: inherit;
+          font-size: inherit;
+          font-weight: bold;
+        }
+        .hidden {
+          display: none;
+        }
+        .shown {
+          display: inline-block;
         }
     </style>
+
     <div id="keyboard"></div>
   `;
+  var nextGameContainerHTML = document.createElement("template");
+  nextGameContainerHTML.innerHTML = `
+    <div id="next-game-container">
+      <button id="next-game-button">
+        <span class="underline">N</span>ext
+      </button>
+      <!-- <p id="game-status"></p> -->
+    </div>`;
+
+  var keyboardPaddingHTML = document.createElement("template");
+  keyboardPaddingHTML.innerHTML = `<div id="keyboard-padding"></div>`;
 
   var keyboard = function(htmlElement) {
 
@@ -162,6 +205,7 @@ this.numero.game = function (retValue) {
       var e;
       isInstanceOf(this, returnFunction);
       (e = element.call(this)).attachShadow({ mode: "open" });
+      addKeyValueToDict(NotInitializedError(e), "$nextGameButton", void 0);
       return e;
     }
 
@@ -170,8 +214,12 @@ this.numero.game = function (retValue) {
       value: function () {
         var lThis = this;
 
+        this.shadowRoot.appendChild(keyboardPaddingHTML.content.cloneNode(!0));
+        this.shadowRoot.appendChild(nextGameContainerHTML.content.cloneNode(!0));
         this.shadowRoot.appendChild(keyboardHTMLElement.content.cloneNode(!0));
+
         this.$keyboard = this.shadowRoot.getElementById("keyboard");
+        this.$nextGameButton = this.shadowRoot.getElementById("next-game-button");
 
         digitsKeyboard.forEach(function (line) {
 
@@ -213,6 +261,15 @@ this.numero.game = function (retValue) {
              }
            }
          }));
+         this.$nextGameButton.addEventListener("click", () => {
+           this.dispatchEvent(new CustomEvent("game-key-press", {
+             bubbles: !0, // bubbles up the DOM tree, to be catched
+             composed: !0, // propagates across the shadow DOM to regular DOM
+             detail: {
+               key: "n" // value associated with the event
+             }
+           }));
+         });
       }
     }, {
       key: "dispatchKeyPressEvent",
@@ -263,6 +320,11 @@ this.numero.game = function (retValue) {
         display: flex;
         flex-direction: column;
       }
+      @media (orientation: landscape) and (max-height: 600px) {
+        #game {
+          flex-direction: row;
+        }
+      }
       #board-container {
         display: flex;
         justify-content: center;
@@ -270,12 +332,13 @@ this.numero.game = function (retValue) {
         flex-grow: 1;
         overflow: hidden;
         flex-direction: column;
+        overflow: visible;
+        padding-top: 15px;
       }
       game-keyboard {
   			width: 100%;
-  			max-width: var(--game-max-width);
   			margin: 0 auto;
-  			height: 250px;
+  			height: 320px;
   			display: flex;
   			flex-direction: column;
         font-size: 1.2em;
@@ -292,10 +355,10 @@ this.numero.game = function (retValue) {
         height: 55px;
         margin: 0 0 8px 0;
       }
-      @media (max-height: 600px) {
+      @media (max-height: 600px) and (orientation: landscape) {
         game-keyboard {
           max-width: 350px;
-          height: 220px;
+          height: 100%;
         }
         #next-game-container {
           height: 35px;
@@ -305,6 +368,8 @@ this.numero.game = function (retValue) {
           width: 100%;
           margin-bottom: 8px;
         }
+      }
+      @media (max-height: 600px) {
         #board {
           font-size: 2.3em;
         }
@@ -336,6 +401,11 @@ this.numero.game = function (retValue) {
         pointer-events: none;
         width: fit-content;
       }
+      @media (max-height: 600px) {
+        .toaster {
+          left: 20%;
+        }
+      }
       #board-container {
         flex-direction: row;
         justify-content: space-between;
@@ -347,19 +417,11 @@ this.numero.game = function (retValue) {
         justify-content: space-around;
         width: 2rem;
       }
-      .progress-count {
-        padding: 5px;
-        margin: 5px;
-        background-color: grey;
-        height: 100%;
-        border-radius: 1rem;
-      }
       #progression {
         position: absolute;
         top: var(--header-height);
         right: 0;
         padding: 8px;
-        color: #787c7e;
         font-size: 12px;
       }
       #timer {
@@ -367,28 +429,7 @@ this.numero.game = function (retValue) {
         top: var(--header-height);
         left: 0;
         padding: 8px;
-        color: #787c7e;
         font-size: 12px;
-      }
-      #next-game-button {
-        height: 100%;
-        cursor: pointer;
-        user-select: none;
-        background-color: #d4d7db;
-        color: black;
-        border: 0;
-        border-radius: 4px;
-
-        width: calc(100% - 8px);
-        font-family: inherit;
-        font-size: inherit;
-        font-weight: bold;
-      }
-      .hidden {
-        display: none;
-      }
-      .shown {
-        display: inline-block;
       }
       .underline {
         text-decoration: underline;
@@ -402,7 +443,6 @@ this.numero.game = function (retValue) {
         width: 14ex;
         top: var(--header-height);
         padding: 8px;
-        color: #787c7e;
         font-size: 12px;
       }
       validation-menu {
@@ -442,16 +482,11 @@ this.numero.game = function (retValue) {
           <div class="line"></div>
           <div id="valRes">?</div>
         </div>
-        <div id="progress">
-        </div>
+        <div id="progress"></div>
       </div>
-      <div id="next-game-container">
-        <button id="next-game-button">
-          <span class="underline">N</span>ext
-        </button>
-        <!-- <p id="game-status"></p> -->
-      </div>
-      <game-keyboard></game-keyboard>
+
+      <game-keyboard>
+      </game-keyboard>
       <full-page></full-page>
       <game-modal></game-modal>
     </div>
@@ -481,7 +516,6 @@ this.numero.game = function (retValue) {
       addKeyValueToDict(NotInitializedError(e), "gameStatus", void 0);
       addKeyValueToDict(NotInitializedError(e), "gameStatusDiv", void 0);
 
-      addKeyValueToDict(NotInitializedError(e), "nextGameButton", void 0);
       addKeyValueToDict(NotInitializedError(e), "nextGameDiv", void 0);
 
       addKeyValueToDict(NotInitializedError(e), "currentStreak", 1);
@@ -493,6 +527,9 @@ this.numero.game = function (retValue) {
 
       addKeyValueToDict(NotInitializedError(e), "$boardDiv", void 0);
       addKeyValueToDict(NotInitializedError(e), "gameWidth", 2);
+
+      addKeyValueToDict(NotInitializedError(e), "$gameKeyboard", void 0);
+      addKeyValueToDict(NotInitializedError(e), "$nextGameContainer", void 0);
 
       addKeyValueToDict(NotInitializedError(e), "startTime", void 0);
 
@@ -532,21 +569,12 @@ this.numero.game = function (retValue) {
           this.valBotDiv = this.shadowRoot.getElementById("valBot");
           this.valResDiv = this.shadowRoot.getElementById("valRes");
           this.gameStatusDiv = this.shadowRoot.getElementById("game-status");
-          this.nextGameButton = this.shadowRoot.getElementById("next-game-button");
           this.nextGameDiv = this.shadowRoot.getElementById("next-game-container");
           this.$boardDiv = this.shadowRoot.getElementById("board");
 
           this.streakDiv = this.shadowRoot.getElementById("progression");
 
-          this.nextGameButton.addEventListener("click", () => {
-            this.dispatchEvent(new CustomEvent("game-key-press", {
-              bubbles: !0, // bubbles up the DOM tree, to be catched
-              composed: !0, // propagates across the shadow DOM to regular DOM
-              detail: {
-                key: "n" // value associated with the event
-              }
-            }));
-          });
+
 
           this.addEventListener("game-key-press", (function(e) {
             var numberStr = e.detail.key;
@@ -802,12 +830,16 @@ this.numero.game = function (retValue) {
       }, {
         key: "showNextGameButton",
         value: function (isEnabled) {
+          // var mmm = this.shadowRoot.querySelector("#next-game-button");
+          this.$gameKeyboard = this.shadowRoot.querySelector("game-keyboard");
+          this.$nextGameContainer = this.$gameKeyboard.shadowRoot
+            .querySelector("#next-game-button");
           if (isEnabled) {
-            this.nextGameButton.classList.remove("hidden");
-            this.nextGameButton.classList.add("shown");
+            this.$nextGameContainer.classList.remove("hidden");
+            this.$nextGameContainer.classList.add("shown");
           } else {
-            this.nextGameButton.classList.add("hidden");
-            this.nextGameButton.classList.remove("shown");
+            this.$nextGameContainer.classList.add("hidden");
+            this.$nextGameContainer.classList.remove("shown");
           }
         }
       }
