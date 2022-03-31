@@ -419,20 +419,7 @@ this.numero.game = function (retValue) {
           <div id="valRes">?</div>
         </div>
         <div id="progress">
-          <!-- <div class="progress-count"></div>
-          <div class="progress-count"></div>
-          <div class="progress-count"></div>
-          <div class="progress-count"></div>
-          <div class="progress-count"></div>
-          <div class="progress-count"></div>
-          <div class="progress-count"></div>
-          <div class="progress-count"></div>
-          <div class="progress-count"></div>
-          <div class="progress-count"></div> -->
         </div>
-        <!-- <div id="gridboard">
-        1
-        </div> -->
       </div>
       <div id="next-game-container">
         <button id="next-game-button">
@@ -482,6 +469,8 @@ this.numero.game = function (retValue) {
 
       addKeyValueToDict(NotInitializedError(e), "$boardDiv", void 0);
       addKeyValueToDict(NotInitializedError(e), "gameWidth", 2);
+
+      addKeyValueToDict(NotInitializedError(e), "startTime", void 0);
       // 1 if multiply mode
 
       return e;
@@ -549,6 +538,9 @@ this.numero.game = function (retValue) {
                 this.newGame();
               }
             }
+            if (numberStr === "reload") {
+              this.reloadGame();
+            }
           }));
 
           this.addEventListener("startTimer", function() {
@@ -563,14 +555,32 @@ this.numero.game = function (retValue) {
           this.showGameMenuModal();
         }
       }, {
+        key: "reloadGame",
+        value: function () {
+          currentLevel = 1;
+          secondsLapsed = 0;
+          currentSettings = {
+            operator: "addition",
+            sizeOperand: "one",
+          };
+          this.startTime = Date.now();
+          this.secondsLapsed = 0;
+          this.playTime = 0;
+          this.newGame(1);
+          this.shadowRoot.querySelector("#LeveL-num").innerHTML =
+            `LeveL ${currentLevel}`
+          this.streakDiv.innerHTML = this.currentStreak + "/" + this.streakLength;
+          console.log("Reloaded...");
+        }
+      }, {
         key: "startTimer",
         value: function () {
-          var startTime = Date.now();
+          this.startTime = Date.now();
           rootThis = this;
           function updateTimer() {
             // There is no build in function to do this in javascript...
             secondsLapsed = Math.floor(
-              (Date.now() - startTime) / 1000) + rootThis.playTime;
+              (Date.now() - rootThis.startTime) / 1000) + rootThis.playTime;
             var minutesLapsed = Math.floor(secondsLapsed / 60) ;
             var modSecondsLapsed = secondsLapsed % 60;
             var timerString = "";
@@ -1471,7 +1481,7 @@ this.numero.game = function (retValue) {
               bubbles: !0, // bubbles up the DOM tree, to be catched
               composed: !0, // propagates across the shadow DOM to regular DOM
               detail: {
-                key: "n" // value associated with the event
+                key: "reload" // value associated with the event
               }
             }));
           });
