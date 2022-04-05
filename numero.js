@@ -14,7 +14,8 @@ this.numero.game = function (retValue) {
 
   var OPERATTIONS = ["addition", "substraction", "multiplication", "division"];
   var SIZES = ["one", "two", "three", "four"];
-  var SCRIPTS = ["westArabic", "eastArabic", "braille", "lao"];
+  var SCRIPTS = ["westArabic", "eastArabic", "lao", "braille",
+                 "devanagari", "urdu"];
   var sizeToInt = { one: 1, two: 2, three: 3, four: 4};
 
   var currentLevel = 1;
@@ -123,6 +124,26 @@ this.numero.game = function (retValue) {
     "5": "໕", "6": "໖", "7": "໗", "8": "໘", "9": "໙"
   };
 
+  var devanagariToWestDict = {
+    "०": "0", "१": "1", "२": "2", "३": "3", "४": "4",
+    "५": "5", "६": "6", "७": "7", "८": "8", "९": "9",
+  };
+
+  var westToDevanagariDict = {
+    "0": "०", "1": "१", "2": "२", "3": "३", "4": "४",
+    "5": "५", "6": "६", "7": "७", "8": "८", "9": "९"
+  }
+
+  var urduToWestDict = {
+    "०": "0", "१": "1", "२": "2", "३": "3", "४": "4",
+    "५": "5", "६": "6", "७": "7", "८": "8", "९": "9"
+  };
+  var westToUrduDict = {
+    "0": "۰", "1": "۱", "2": "۲", "3": "۳", "4": "۴",
+    "5": "۵", "6": "۶", "7": "۷", "8": "۸", "9": "۹"
+  };
+
+
   var digits = [].concat.apply([], digitsKeyboard);
 
   // Formatting time to string
@@ -164,6 +185,14 @@ this.numero.game = function (retValue) {
           res += laoToWestDict[e];
         });
         break;
+      case "devanagari":
+        otherScriptString.split("").forEach((e) => {
+          res += devanagariToWestDict[e];
+        });
+      case "urdu":
+        otherScriptString.split("").forEach((e) => {
+          res += urduToWestDict[e];
+        });
     }
     return res;
   }
@@ -189,6 +218,17 @@ this.numero.game = function (retValue) {
           res += westToLaoDict[e];
         });
         break;
+      case "devanagari":
+        westString.split("").forEach((e) => {
+          res += westToDevanagariDict[e];
+        });
+        break;
+      case "urdu":
+        westString.split("").forEach((e) => {
+          res += westToUrduDict[e];
+        });
+        break;
+
     }
     return res;
   }
@@ -221,6 +261,7 @@ this.numero.game = function (retValue) {
     			justify-content: center;
     			align-items: center;
     			text-transform: uppercase;
+          -webkit-appearance: none;
         }
         @media (max-height: 600px) and (orientation: landscape) {
           button {
@@ -1340,15 +1381,17 @@ this.numero.game = function (retValue) {
         font-family: inherit;
         font-size: 16px;
         padding: 12px 0;
+        background-color: #DDD;
       }
       .scripts {
         display: flex;
         margin-top: 1em;
+        flex-wrap: wrap;
       }
       .script {
         flex-grow: 1;
-        padding: 1em 0 1em;
-        margin: 0 1em 0;
+        padding: 1em 1em 1em;
+        margin: 0 0.5em 1em;
       }
       .selected {
         background-color: LightSkyBlue;
@@ -1364,7 +1407,9 @@ this.numero.game = function (retValue) {
             <button class="script" id="westArabic">West arabic</button>
             <button class="script" id="eastArabic">East arabic</button>
             <button class="script" id="braille">Braille</button>
+            <button class="script" id="devanagari">Devanagari</button>
             <button class="script" id="lao">Lao</button>
+            <button class="script" id="urdu">Urdu</button>
           </div>
         </div>
       </div>
