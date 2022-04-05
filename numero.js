@@ -9,10 +9,12 @@ this.numero.game = function (retValue) {
   var currentSettings = {
     operator: "addition",
     sizeOperand: "one",
+    script: "westArabic"
   };
 
   var OPERATTIONS = ["addition", "substraction", "multiplication", "division"];
   var SIZES = ["one", "two", "three", "four"];
+  var SCRIPTS = ["westArabic", "eastArabic", "braille", "lao"];
   var sizeToInt = { one: 1, two: 2, three: 3, four: 4};
 
   var currentLevel = 1;
@@ -95,6 +97,32 @@ this.numero.game = function (retValue) {
     ["1", "2", "3"],
     ["⌫", "0", "↩"],
   ];
+
+  var arabicToWestDict = {
+    "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
+    "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9"
+  };
+  var westToArabicDict = {
+    "0": "٠", "1": "١", "2": "٢", "3": "٣", "4": "٤",
+    "5": "٥", "6": "٦", "7": "٧", "8": "٨", "9": "٩"
+  };
+  var brailleToWestDict = {
+    "⠚": "0",	"⠁": "1",	"⠃": "2", "⠉": "3", "⠙": "4",
+    "⠑": "5", "⠋": "6", "⠛": "7", "⠓": "8", "⠊": "9"
+  };
+  var westToBrailleDict = {
+    "0": "⠚", "1": "⠁", "2": "⠃", "3": "⠉", "4": "⠙",
+    "5": "⠑", "6": "⠋", "7": "⠛", "8": "⠓", "9": "⠊"
+  };
+  var laoToWestDict = {
+    "໐": "0", "໑": "1", "໒": "2", "໓": "3", "໔": "4",
+    "໕": "5", "໖": "6", "໗": "7", "໘": "8", "໙": "9",
+  }
+  var westToLaoDict = {
+    "0": "໐", "1": "໑", "2": "໒", "3": "໓", "4": "໔",
+    "5": "໕", "6": "໖", "7": "໗", "8": "໘", "9": "໙"
+  };
+
   var digits = [].concat.apply([], digitsKeyboard);
 
   // Formatting time to string
@@ -112,6 +140,57 @@ this.numero.game = function (retValue) {
     else if (modSecondsLapsed < 10) retString += "0" + modSecondsLapsed;
     else retString += modSecondsLapsed;
     return retString;
+  }
+
+  // Handling numerals in other scripts
+  function scriptToWest(otherScriptString) {
+    var res = "";
+    switch (currentSettings.script) {
+      case "westArabic":
+        res = otherScriptString;
+        break;
+      case "eastArabic":
+        otherScriptString.split("").forEach((e) => {
+          res += arabicToWestDict[e];
+        });
+        break;
+      case "braille":
+        otherScriptString.split("").forEach((e) => {
+          res += brailleToWestDict[e];
+        });
+        break;
+      case "lao":
+        otherScriptString.split("").forEach((e) => {
+          res += laoToWestDict[e];
+        });
+        break;
+    }
+    return res;
+  }
+
+  function westToScript(westString) {
+    var res = "";
+    switch (currentSettings.script) {
+      case "westArabic":
+        res = westString;
+        break;
+      case "eastArabic":
+        westString.split("").forEach((e) => {
+          res += westToArabicDict[e];
+        });
+        break;
+      case "braille":
+        westString.split("").forEach((e) => {
+          res += westToBrailleDict[e];
+        });
+        break;
+      case "lao":
+        westString.split("").forEach((e) => {
+          res += westToLaoDict[e];
+        });
+        break;
+    }
+    return res;
   }
 
   // Keyboard tag
@@ -229,13 +308,14 @@ this.numero.game = function (retValue) {
             var digitButton = button.content.cloneNode(!0);
 
             digitButton.firstElementChild.dataset.key = digit;
+            digitButton.firstElementChild.id = "digit" + digit;
 
             if (digit === "↩") {
               digitButton.firstElementChild.innerHTML = "ENTER";
             } else if (digit === "⌫") {
               digitButton.firstElementChild.innerHTML = "BACK";
             } else {
-              digitButton.firstElementChild.textContent = digit;
+              digitButton.firstElementChild.textContent = westToScript(digit);
             }
 
             row.appendChild(digitButton);
@@ -261,7 +341,7 @@ this.numero.game = function (retValue) {
              }
            }
          }));
-         this.$nextGameButton.addEventListener("click", () => {
+        this.$nextGameButton.addEventListener("click", () => {
            this.dispatchEvent(new CustomEvent("game-key-press", {
              bubbles: !0, // bubbles up the DOM tree, to be catched
              composed: !0, // propagates across the shadow DOM to regular DOM
@@ -270,6 +350,24 @@ this.numero.game = function (retValue) {
              }
            }));
          });
+
+         this.render();
+      }
+    }, {
+      key: "render",
+      value: function () {
+        var allButtons = this.shadowRoot.querySelectorAll("button");
+        allButtons.forEach((digitButton) => {
+          if (digitButton.id === "next-game-button") { return; }
+          var digit = digitButton.id.substring(5);
+          if (digit === "↩") {
+            digitButton.innerHTML = "ENTER";
+          } else if (digit === "⌫") {
+            digitButton.innerHTML = "BACK";
+          } else {
+            digitButton.textContent = westToScript(digit);
+          }
+        });
       }
     }, {
       key: "dispatchKeyPressEvent",
@@ -459,13 +557,16 @@ this.numero.game = function (retValue) {
         <button id="game-menu" class="icon">
           <game-icon icon="numero"></game-icon>
         </button>
-      </div>
-      <div class="title">Numero</div>
-      <div class="menu-right">
         <button id="reload-button" class="icon" tabindex="-1">
           <game-icon icon="reload"></game-icon>
         </button>
+      </div>
+      <div class="title">Numero</div>
+      <div class="menu-right">
         <button id="settings-button" class="icon" tabindex="-1">
+          <game-icon icon="settings"></game-icon>
+        </button>
+        <button id="graph-button" class="icon" tabindex="-1">
 					<game-icon icon="graph"></game-icon>
 				</button>
       </div>
@@ -541,15 +642,20 @@ this.numero.game = function (retValue) {
         key: "connectedCallback",
         value: function () {
           var rootThis = this;
-          currentSettings = loadSettings();
+          loadSettings();
 
           this.shadowRoot.appendChild(numeroRootElement.content.cloneNode(!0));
 
-          this.shadowRoot.getElementById("settings-button").
+          this.shadowRoot.getElementById("graph-button").
              addEventListener("click", (function(e) {
-               // this will be the settings button here
-               rootThis.showSettingsFullPage();
+               rootThis.showResultsFullPage();
              }));
+
+          this.shadowRoot.getElementById("settings-button").
+            addEventListener("click", (function(e) {
+              rootThis.showSettingsFullPage();
+            }));
+
 
           this.shadowRoot.getElementById("reload-button").
             addEventListener("click", function (e) {
@@ -562,6 +668,7 @@ this.numero.game = function (retValue) {
             }))
 
           this.addEventListener("new-game", function() {
+            this.$gameKeyboard.render();
             this.newGame();
           });
 
@@ -584,7 +691,7 @@ this.numero.game = function (retValue) {
               } else if (numberStr === "↩" || numberStr === "Enter") {
                 this.submitGuess();
               } else if (digits.includes(numberStr)) {
-                this.addNumber(parseInt(numberStr, 10));
+                this.addNumber(numberStr);
               }
             } else {
               if (numberStr.toLowerCase() === "n") {
@@ -612,13 +719,12 @@ this.numero.game = function (retValue) {
         value: function () {
           currentLevel = 1;
           secondsLapsed = 0;
-          currentSettings = {
-            operator: "addition",
-            sizeOperand: "one",
-          };
+          currentSettings.sizeOperand = "addition";
+          currentSettings.sizeOperand = "one";
           this.startTime = Date.now();
           this.secondsLapsed = 0;
           this.playTime = 0;
+          this.currentStreak = 1;
           this.newGame(1);
           this.shadowRoot.querySelector("#LeveL-num").innerHTML =
             `LeveL ${currentLevel}`
@@ -655,17 +761,31 @@ this.numero.game = function (retValue) {
           }
         }
       }, {
-        key: "showSettingsFullPage",
+        key: "showResultsFullPage",
         value: function () {
           var fullPageDiv = this.shadowRoot.querySelector("full-page");
           var s = document.createElement("p");
           s.setAttribute("id", "best-results-title");
           s.innerHTML = "Best results";
           fullPageDiv.appendChild(s);
-          var settings = document.createElement("game-settings");
-          settings.setAttribute("page", "");
-          settings.setAttribute("slot", "content");
-          fullPageDiv.appendChild(settings);
+          var _results = document.createElement("game-results");
+          _results.setAttribute("page", "");
+          _results.setAttribute("slot", "content");
+          fullPageDiv.appendChild(_results);
+          fullPageDiv.setAttribute("open", "");
+        }
+      }, {
+        key: "showSettingsFullPage",
+        value: function() {
+          var fullPageDiv = this.shadowRoot.querySelector("full-page");
+          var s = document.createElement("p");
+          s.setAttribute("id", "settings-title");
+          s.innerHTML = "Settings";
+          fullPageDiv.appendChild(s);
+          var _settings = document.createElement("game-settings");
+          _settings.setAttribute("page", "");
+          _settings.setAttribute("slot", "content");
+          fullPageDiv.appendChild(_settings);
           fullPageDiv.setAttribute("open", "");
         }
       }, {
@@ -699,17 +819,20 @@ this.numero.game = function (retValue) {
         key: "addNumber",
         value: function (n) {
           if (this.valResDiv.innerHTML === "?") {
-              this.valResDiv.innerHTML = n;
+              this.valResDiv.innerHTML = westToScript(n);
           } else {
             if (this.valResDiv.innerHTML.length < this.gameWidth) {
-              this.valResDiv.innerHTML += n;
+              this.valResDiv.innerHTML += westToScript(n);
             }
           }
         }
       }, {
         key: "submitGuess",
         value: function() {
-          if (parseInt(this.valResDiv.innerHTML, 10) === this.valRes) {
+          var currentGuess = scriptToWest(this.valResDiv.innerHTML);
+          currentGuess = parseInt(currentGuess, 10);
+
+          if (currentGuess === this.valRes) {
             this.gameStatus = "ENDEDRIGHT";
             this.currentStreak += 1;
             if (this.currentStreak < this.streakLength) {
@@ -767,21 +890,21 @@ this.numero.game = function (retValue) {
               this.valTop = Math.ceil(Math.random() * Math.pow(10, numOf10));
               this.valBot = Math.ceil(Math.random() * Math.pow(10 - 1, numOf10));
               this.valRes = this.valTop + this.valBot;
-              this.valBotDiv.innerHTML = "+" + this.valBot.toString();
+              this.valBotDiv.innerHTML = "+" + westToScript(this.valBot.toString());
               this.gameWidth = numOf10 + 1;
               break;
             case "substraction":
               this.valBot = Math.ceil(Math.random() * Math.pow(10, numOf10));
               this.valRes = Math.ceil(Math.random() * Math.pow(10, numOf10));
               this.valTop = this.valBot + this.valRes;
-              this.valBotDiv.innerHTML = "-" + this.valBot.toString();
+              this.valBotDiv.innerHTML = "-" + westToScript(this.valBot.toString());
               this.gameWidth = numOf10 + 2;
               break;
             case "multiplication":
               this.valTop = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valRes = this.valTop * this.valBot;
-              this.valBotDiv.innerHTML = "*" + this.valBot.toString();
+              this.valBotDiv.innerHTML = "*" + westToScript(this.valBot.toString());
               if (numOf10 == 1) {
                 this.gameWidth = 3;
               } else {
@@ -792,7 +915,7 @@ this.numero.game = function (retValue) {
               this.valRes = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valBot = Math.ceil(1 + Math.random() * (10 * numOf10 - 1));
               this.valTop =  this.valRes * this.valBot;
-              this.valBotDiv.innerHTML = "÷" + this.valBot.toString();
+              this.valBotDiv.innerHTML = "÷" + westToScript(this.valBot.toString());
               if (numOf10 == 1) {
                 this.gameWidth = 3;
               } else {
@@ -801,7 +924,7 @@ this.numero.game = function (retValue) {
               break;
           }
 
-          this.valTopDiv.innerHTML = this.valTop.toString();
+          this.valTopDiv.innerHTML = westToScript(this.valTop.toString());
           this.valResDiv.innerHTML = "?";
 
           // console.log(`Result ${this.valRes}`);
@@ -972,18 +1095,20 @@ this.numero.game = function (retValue) {
 				this.shadowRoot.querySelector("game-icon").addEventListener("click",
           function(a) {
             e.shadowRoot.querySelector(".overlay").classList.add("closing");
+            saveSettings();
+            this.dispatchEvent(new CustomEvent("new-game", {
+              bubbles: !0, // bubbles up the DOM tree, to be catched
+              composed: !0, // propagates across the shadow DOM to regular DOM
+            }));
           });
         this.shadowRoot.addEventListener("animationend", (function(a) {
-          "SlideOut" === a.animationName &&
-          (e.shadowRoot.querySelector(".overlay").classList.remove("closing"),
-          Array.from(e.childNodes).forEach((function(a) {
-            e.removeChild(a)
-          })), e.removeAttribute("open"));
-          saveSettings();
-          this.dispatchEvent(new CustomEvent("new-game", {
-            bubbles: !0, // bubbles up the DOM tree, to be catched
-            composed: !0, // propagates across the shadow DOM to regular DOM
-          }));
+          if ("SlideOut" === a.animationName) {
+            e.shadowRoot.querySelector(".overlay").classList.remove("closing");
+            Array.from(e.childNodes).forEach((function(a) {
+              e.removeChild(a)
+            }));
+            e.removeAttribute("open");
+          }
         }));
 
       }
@@ -992,9 +1117,9 @@ this.numero.game = function (retValue) {
   }(SomethingElement(HTMLElement));
   customElements.define("full-page", fullPage);
 
-  // Settings Menu
-  var settingsElement = document.createElement("template");
-  settingsElement.innerHTML = `
+  // Results Menu
+  var gameResultsElement = document.createElement("template");
+  gameResultsElement.innerHTML = `
     <style>
       .setting {
         display: flex;
@@ -1078,32 +1203,6 @@ this.numero.game = function (retValue) {
     <section id="best-results-container">
     </section>
 
-    <section style="display: none;">
-      <div class="setting" >
-        <div class="text">
-          <div class="title">Operation</div>
-          <div class="description">Which operation do you want to play?</div>
-          <div class="operations">
-            <button class="operation" id="addition">+</button>
-            <button class="operation" id="substraction">-</button>
-            <button class="operation" id="multiplication">×</button>
-            <button class="operation" id="division">÷</button>
-          </div>
-        </div>
-      </div>
-      <div class="setting">
-        <div class="text">
-          <div class="title">Size</div>
-          <div class="description">How many digits in your operands?</div>
-          <div class="operations">
-            <button class="operation" id="one">1</button>
-            <button class="operation" id="two">2</button>
-            <button class="operation" id="three">3</button>
-            <button class="operation" id="four">4</button>
-          </div>
-        </div>
-      </div>
-    </section>
     <section style="margin-bottom: 16px;">
       <div class="setting">
         <div class="text">
@@ -1112,14 +1211,9 @@ this.numero.game = function (retValue) {
         <div class="control"><a href="./">Link</a></div>
       </div>
     </section>
-
-    <!-- <div id="footnote">
-      <div>© Numero 2022</div>
-      <div id="puzzle-number">#1</div>
-    </div> -->
   `;
 
-  var settings = function(htmlElement) {
+  var gameResults = function(htmlElement) {
     setPrototype(returnFunction, htmlElement);
     var element = constructElement(returnFunction);
 
@@ -1134,7 +1228,7 @@ this.numero.game = function (retValue) {
       key: "connectedCallback",
       value: function() {
         var lThis = this;
-        this.shadowRoot.appendChild(settingsElement.content.cloneNode(!0));
+        this.shadowRoot.appendChild(gameResultsElement.content.cloneNode(!0));
 
         var bestResultsContainer = this.shadowRoot
           .querySelector("#best-results-container");
@@ -1175,17 +1269,157 @@ this.numero.game = function (retValue) {
           </div>
           `;
         }
+      }
+    }]);
+
+    return returnFunction;
+  }(SomethingElement(HTMLElement));
+  customElements.define("game-results", gameResults);
+
+  // Settings Menu
+  var settingsElement = document.createElement("template");
+  settingsElement.innerHTML = `
+    <style>
+      .setting {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #d4d5d9;
+        padding: 24px 0;
+      }
+      @media (max-height: 600px) {
+        .result {
+          padding: 4px 0;
+        }
+      }
+      .text {
+        padding-right: 8px;
+        flex-grow: 1;
+      }
+      .content {
+        position: relative;
+        color: black;
+        padding: 0 32px;
+        max-width: var(--game-max-width);
+        width: 100%;
+        overflow-y: auto;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      section {
+        padding: 0 1em 0;
+      }
+      .title {
+        font-size: 24px;
+      }
+      .description {
+        font-size: 18px;
+        color: #777b7d;
+      }
+      a, a:visited {
+        color: #787c7e;
+      }
+
+      #footnote {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 16px;
+        color: #787c7e;
+        font-size: 12px;
+        text-align: right;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      button {
+        border-radius: 10px;
+        border: 0;
+        font-family: inherit;
+        font-size: 16px;
+        padding: 12px 0;
+      }
+      .scripts {
+        display: flex;
+        margin-top: 1em;
+      }
+      .script {
+        flex-grow: 1;
+        padding: 1em 0 1em;
+        margin: 0 1em 0;
+      }
+      .selected {
+        background-color: LightSkyBlue;
+      }
+    </style>
+
+    <section>
+      <div class="setting" >
+        <div class="text">
+          <div class="title">Script</div>
+          <div class="description">With wich script do you want to play?</div>
+          <div class="scripts">
+            <button class="script" id="westArabic">West arabic</button>
+            <button class="script" id="eastArabic">East arabic</button>
+            <button class="script" id="braille">Braille</button>
+            <button class="script" id="lao">Lao</button>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="setting">
+        <div class="text">
+          <div class="title">Size</div>
+          <div class="description">How many digits in your operands?</div>
+          <div class="operations">
+            <button class="operation" id="one">1</button>
+            <button class="operation" id="two">2</button>
+            <button class="operation" id="three">3</button>
+            <button class="operation" id="four">4</button>
+          </div>
+        </div>
+      </div> -->
+    </section>
+    <section style="margin-bottom: 16px;">
+      <div class="setting">
+        <div class="text">
+          <div class="title">More ?</div>
+        </div>
+        <div class="control"><a href="./">Link</a></div>
+      </div>
+    </section>
+
+    <div id="footnote">
+      <div>© Numero 2022</div>
+      <div id="puzzle-number">#1</div>
+    </div>
+  `;
+
+  var gameSettings = function(htmlElement) {
+    setPrototype(returnFunction, htmlElement);
+    var element = constructElement(returnFunction);
+
+    function returnFunction() {
+      var e;
+      isInstanceOf(this, returnFunction);
+      (e = element.call(this)).attachShadow({ mode: "open" });
+      return e;
+    }
+
+    addKeyFunction(returnFunction , [{
+      key: "connectedCallback",
+      value: function() {
+        var lThis = this;
+        this.shadowRoot.appendChild(settingsElement.content.cloneNode(!0));
 
         var settingsButtons = this.shadowRoot.querySelectorAll("button");
 
         settingsButtons.forEach(function(button, i) {
           button.addEventListener("click", function () {
-            var b = this;
-            if (OPERATTIONS.includes(b.id)) {
-              currentSettings.operator = b.id;
-            } else if (SIZES.includes(b.id)) {
-              currentSettings.sizeOperand = b.id;
-            }
+            var scriptSelected = this.id;
+            currentSettings.script = scriptSelected;
+            console.log(`Selected script: ${scriptSelected}`);
             lThis.render();
           });
         });
@@ -1202,20 +1436,21 @@ this.numero.game = function (retValue) {
           item.classList.remove("selected");
         });
 
-        var operatorDiv = this.shadowRoot.querySelector(
-          "#" + currentSettings.operator);
-        operatorDiv.classList.add("selected");
+        var scriptDiv = this.shadowRoot.querySelector(
+          "#" + currentSettings.script);
+        scriptDiv.classList.add("selected");
 
-        var operandDiv = this.shadowRoot.querySelector(
-          "#" + currentSettings.sizeOperand);
-        operandDiv.classList.add("selected");
+        // var operandDiv = this.shadowRoot.querySelector(
+        //   "#" + currentSettings.sizeOperand);
+        // operandDiv.classList.add("selected");
 
       }
     }]);
 
     return returnFunction;
   }(SomethingElement(HTMLElement));
-  customElements.define("game-settings", settings);
+  customElements.define("game-settings", gameSettings);
+
 
   // Modal display
   var gameModalElement = document.createElement("template");
@@ -1536,15 +1771,20 @@ this.numero.game = function (retValue) {
 
   // Local storage
   function loadSettings() {
-    var settings = window.localStorage.getItem("numero-settings") ||
+    var loadedSettings = window.localStorage.getItem("numero-settings") ||
       JSON.stringify(currentSettings);
+      loadedSettings = JSON.parse(loadedSettings);
+    for (const [key, value] of Object.entries(loadedSettings)) {
+      currentSettings[key] = value;
+    }
     bestLevel = parseInt(window.localStorage.getItem(
       "numero-best-level"), 10) || 1;
     bestTimeSeconds = parseInt(window.localStorage.getItem(
       "numero-best-time-seconds"), 10) || 0;
-    bestStats = JSON.parse(window.localStorage.getItem("numero-best-stats")) || {};
+    bestStats = JSON.parse(
+      window.localStorage.getItem("numero-best-stats")) || {};
 
-    return JSON.parse(settings);
+    // return JSON.parse(settings);
   }
 
   function saveSettings() {
