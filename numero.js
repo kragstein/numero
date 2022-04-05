@@ -1249,7 +1249,9 @@ this.numero.game = function (retValue) {
         <div class="text">
           <div class="title">More ?</div>
         </div>
-        <div class="control"><a href="./">Link</a></div>
+        <div class="control">
+          <a href="https://numero.kragstein.ch">Link</a>
+        </div>
       </div>
     </section>
   `;
@@ -1431,7 +1433,7 @@ this.numero.game = function (retValue) {
         <div class="text">
           <div class="title">More ?</div>
         </div>
-        <div class="control"><a href="./">Link</a></div>
+        <a href="https://numero.kragstein.ch">Link</a>
       </div>
     </section>
 
@@ -1464,7 +1466,6 @@ this.numero.game = function (retValue) {
           button.addEventListener("click", function () {
             var scriptSelected = this.id;
             currentSettings.script = scriptSelected;
-            console.log(`Selected script: ${scriptSelected}`);
             lThis.render();
           });
         });
